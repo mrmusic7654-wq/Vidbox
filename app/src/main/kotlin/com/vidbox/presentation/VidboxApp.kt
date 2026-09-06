@@ -43,14 +43,15 @@ private enum class Destination(val label: String, val icon: ImageVector, val tag
 fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: HistoryViewModel, settings: SettingsViewModel,
     notificationsAllowed: Boolean, onRequestNotifications: () -> Unit, onChooseFolder: () -> Unit,
     openDownloads: Boolean, onNavigationConsumed: () -> Unit) {
+    var destination by rememberSaveable { mutableStateOf(Destination.HOME) }
     val homeState by home.state.collectAsStateWithLifecycle()
     val active by downloads.active.collectAsStateWithLifecycle()
     val recent by downloads.recent.collectAsStateWithLifecycle()
     val network by downloads.connectivity.collectAsStateWithLifecycle()
-    val historyState by history.state.collectAsStateWithLifecycle()
+    // Do not re-query/decrypt a hidden history page on every active transfer update.
+    val historyState = if (destination == Destination.HISTORY) history.state.collectAsStateWithLifecycle().value else history.state.value
     val query by history.query.collectAsStateWithLifecycle()
     val preferences by settings.state.collectAsStateWithLifecycle()
-    var destination by rememberSaveable { mutableStateOf(Destination.HOME) }
     val snackbars = remember { SnackbarHostState() }
     val context = LocalContext.current
     val clipboard = LocalClipboard.current

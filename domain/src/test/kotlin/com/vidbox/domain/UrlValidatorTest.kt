@@ -20,6 +20,10 @@ class UrlValidatorTest {
         val url = "https://cdn.example.com/a%20b.mp4?sig=abc%2Fdef%3D&expires=123"
         assertEquals(url, UrlValidator.validate(url))
     }
+    @Test fun pastePreservesCompleteSignedLinksEvenWhenTheyEndInPunctuation() {
+        val url = "https://example.com/video?signature=token."
+        assertEquals(url, UrlValidator.findInSharedText(url))
+    }
     @Test fun extractsSharedLinkWithoutExecutingText() {
         assertEquals("https://example.com/watch?v=1", UrlValidator.findInSharedText("Watch this: https://example.com/watch?v=1."))
     }

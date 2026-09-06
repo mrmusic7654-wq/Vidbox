@@ -17,6 +17,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.Closeable
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -89,12 +92,19 @@ class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private 
 
     private suspend fun copy(source: File, destination: Uri, sync: Boolean) = coroutineScope {
         val signal = CancellationSignal()
+        val writer = AtomicReference<Closeable?>()
         val canceller = launch(Dispatchers.Default, start = CoroutineStart.UNDISPATCHED) {
-            try { awaitCancellation() } finally { signal.cancel() }
+            try { awaitCancellation() } finally {
+                signal.cancel()
+                // The descriptor may be a cloud provider's pipe: cancel the open AND any blocked write.
+                runCatching { writer.getAndSet(null)?.close() }
+            }
         }
         try {
             val descriptor = resolver.openFileDescriptor(destination, "w", signal) ?: throw Errors.exception(ErrorCode.PERMISSION)
             ParcelFileDescriptor.AutoCloseOutputStream(descriptor).use { output ->
+                writer.set(output)
+                currentCoroutineContext().ensureActive()
                 source.inputStream().buffered(64 * 1024).use { input ->
                     val buffer = ByteArray(64 * 1024)
                     var written = 0L
@@ -110,7 +120,13 @@ class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private 
                 output.flush()
                 if (sync) output.fd.sync()
             }
-        } finally { canceller.cancel() }
+        } catch (error: IOException) {
+            currentCoroutineContext().ensureActive()
+            throw error
+        } finally {
+            writer.set(null)
+            canceller.cancel()
+        }
     }
 
     override suspend fun exists(uri: String): Boolean = withContext(Dispatchers.IO) {

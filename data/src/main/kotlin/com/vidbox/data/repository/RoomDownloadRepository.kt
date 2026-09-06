@@ -23,6 +23,18 @@ class RoomDownloadRepository @Inject constructor(
     private val json: Json,
 ) : DownloadRepository {
     private val dao get() = database.downloads()
+    private val specCache = object : LinkedHashMap<String, Pair<String, DownloadSpec>>(128, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Pair<String, DownloadSpec>>?) = size > 128
+    }
+    @Synchronized
+    private fun specification(row: DownloadEntity): DownloadSpec {
+        specCache[row.id]?.takeIf { it.first == row.specCiphertext }?.let { return it.second }
+        return json.decodeFromString<DownloadSpec>(cipher.decrypt(row.specCiphertext)).also {
+            specCache[row.id] = row.specCiphertext to it
+        }
+    }
+    @Synchronized private fun forget(id: String) { specCache.remove(id) }
+    @Synchronized private fun forgetAll() { specCache.clear() }
 
     override fun observeActive() = dao.observeActive().map { rows -> rows.map(::record) }.flowOn(Dispatchers.IO)
     override fun observeRecent(limit: Int) = dao.observeRecent(limit.coerceIn(1, 100))
@@ -87,11 +99,11 @@ class RoomDownloadRepository @Inject constructor(
     override suspend fun cleaned(id: String) = database.withTransaction {
         dao.get(id)?.let { dao.update(it.copy(needsCleanup = false, pendingUri = null)) }; Unit
     }
-    override suspend fun removeHistory(id: String) = dao.removeTerminal(id)
-    override suspend fun clearTerminalHistory() = dao.clearTerminal()
+    override suspend fun removeHistory(id: String) { dao.removeTerminal(id); forget(id) }
+    override suspend fun clearTerminalHistory() { dao.clearTerminal(); forgetAll() }
 
     private fun record(e: DownloadEntity) = DownloadRecord(
-        id = e.id, spec = json.decodeFromString<DownloadSpec>(cipher.decrypt(e.specCiphertext)),
+        id = e.id, spec = specification(e),
         fileName = e.fileName, state = DownloadState.valueOf(e.state), downloadedBytes = e.downloadedBytes,
         totalBytes = e.totalBytes, speedBytesPerSecond = e.speedBytesPerSecond, etaSeconds = e.etaSeconds,
         createdAt = e.createdAt, startedAt = e.startedAt, completedAt = e.completedAt,

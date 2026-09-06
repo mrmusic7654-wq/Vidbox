@@ -8,6 +8,7 @@ import com.vidbox.domain.usecase.HistoryActions
 import com.vidbox.domain.util.ErrorMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ class SettingsViewModel @Inject constructor(
     fun update(transform: (AppSettings) -> AppSettings) {
         viewModelScope.launch {
             try { repository.update(transform) }
+            catch (timeout: TimeoutCancellationException) { eventChannel.send(ErrorMapper.from(timeout).message) }
             catch (cancel: CancellationException) { throw cancel }
             catch (error: Exception) { eventChannel.send(ErrorMapper.from(error).message) }
         }
@@ -32,6 +34,7 @@ class SettingsViewModel @Inject constructor(
     fun clearHistory() {
         viewModelScope.launch {
             try { history.clearHistory(); eventChannel.send("History cleared. Downloaded files were not deleted.") }
+            catch (timeout: TimeoutCancellationException) { eventChannel.send(ErrorMapper.from(timeout).message) }
             catch (cancel: CancellationException) { throw cancel }
             catch (error: Exception) { eventChannel.send(ErrorMapper.from(error).message) }
         }

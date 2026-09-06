@@ -20,7 +20,10 @@ object UrlValidator {
         return uri.toASCIIString()
     }
 
-    fun findInSharedText(text: String): String =
-        Regex("https://[^\\s<>]+", RegexOption.IGNORE_CASE).find(text.take(16384))?.value
+    fun findInSharedText(text: String): String {
+        // A complete URL can legitimately end with punctuation in a signed query/path. Never mutate it.
+        runCatching { validate(text) }.getOrNull()?.let { return it }
+        return Regex("https://[^\\s<>]+", RegexOption.IGNORE_CASE).find(text.take(16384))?.value
             ?.trimEnd('.', ',', ')', ']', '}', ';') ?: text.take(8192)
+    }
 }

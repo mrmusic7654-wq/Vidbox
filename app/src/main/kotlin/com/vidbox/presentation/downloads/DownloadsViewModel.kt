@@ -59,7 +59,9 @@ class DownloadsViewModel @Inject constructor(
     }
     private fun perform(block: suspend () -> Unit) {
         viewModelScope.launch {
-            try { block() } catch (cancel: CancellationException) { throw cancel }
+            try { block() }
+            catch (timeout: TimeoutCancellationException) { eventChannel.send(DownloadUiEvent.Message(ErrorMapper.from(timeout).message)) }
+            catch (cancel: CancellationException) { throw cancel }
             catch (error: Exception) { eventChannel.send(DownloadUiEvent.Message(ErrorMapper.from(error).message)) }
         }
     }

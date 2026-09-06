@@ -17,7 +17,7 @@ class FormatPlanner @Inject constructor() {
         val formats = media.formats.filter { it.extension in FileNames.extensions }
         if (media.isDirect) {
             // A direct HTTP probe yields one original file. Never invent qualities or containers.
-            return formats.distinctBy { it.key }.sortedWith(
+            return formats.map(::FormatSelection).distinctBy { it.key }.sortedWith(
                 compareByDescending<FormatSelection> { it.primary.hasVideo }
                     .thenByDescending { it.primary.sizeBytes ?: 0L }
                     .thenBy { it.primary.extension })

@@ -47,7 +47,20 @@ class NativePipelineTest {
         fixtures = File(context.cacheDir, "licensed-test-${UUID.randomUUID()}").apply { mkdirs() }
         runner = NativeProcessRunner(AndroidMediaRuntime(context), logger)
         storage = AndroidMediaStorage(context)
-        generateFixtures()
+        try { generateFixtures() } catch (error: Exception) {
+            // Fixed version-only invocation: diagnostics contain library/bootstrap details, never a user URL.
+            val env = AndroidMediaRuntime(context).environment(AndroidMediaRuntime.Tool.FFMPEG)
+            val builder = ProcessBuilder(env.executable.path, "-version").redirectErrorStream(true)
+            builder.environment().putAll(env.variables)
+            val process = builder.start()
+            val diagnostic = process.inputStream.bufferedReader().use { reader ->
+                val chars = CharArray(3000)
+                val count = reader.read(chars)
+                if (count > 0) String(chars, 0, count) else "No version output"
+            }
+            process.destroy()
+            throw AssertionError("FFmpeg bootstrap: $diagnostic", error)
+        }
         server = MockWebServer().apply {
             dispatcher = object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest): MockResponse {

@@ -32,16 +32,17 @@ def collect(path):
         return [(info.filename, info.compress_size) for info in archive.infolist()]
 
 def summarize(path):
+    # Single line on purpose: raw newlines break workflow command syntax in annotations.
     entries = collect(path)
     cats = {}
     for name, size in entries:
         cat = category(name)
         cats[cat] = cats.get(cat, 0) + size
     ordered = sorted(cats.items(), key=lambda kv: -kv[1])
-    lines = [f"{os.path.basename(path)}: on disk {mb(os.path.getsize(path))}, payload {mb(sum(s for _, s in entries))}"]
-    lines.append(" · ".join(f"{name} {mb(size)}" for name, size in ordered))
-    lines.append("largest: " + "; ".join(f"{n} {mb(s)}" for n, s in sorted(entries, key=lambda p: -p[1])[:6]))
-    return "\n".join(lines)
+    biggest = "; ".join(f"{n} {mb(s)}" for n, s in sorted(entries, key=lambda p: -p[1])[:6])
+    return (f"{os.path.relpath(path, 'app/build/outputs')}: on disk {mb(os.path.getsize(path))}, "
+            f"payload {mb(sum(s for _, s in entries))}, " + " · ".join(f"{name} {mb(size)}" for name, size in ordered)
+            + " || largest: " + biggest)
 
 def main():
     paths = sys.argv[1:] or sorted(

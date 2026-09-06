@@ -71,7 +71,7 @@ fun DownloadButton(
         contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
         modifier = modifier.then(sizing), content = content)
     else OutlinedButton(onClick = onClick, enabled = active, shape = RoundedCornerShape(14.dp),
-        contentPadding = ButtonDefaults.OutlinedButtonWithIconContentPadding,
+        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
         modifier = modifier.then(sizing), content = content)
 }
 

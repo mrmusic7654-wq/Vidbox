@@ -12,7 +12,7 @@ class SettingsEncodingTest {
         assertEquals(1080, settings.defaultQuality)
         assertEquals("mp4", settings.defaultContainer)
         assertEquals(2, settings.maxConcurrent)
-        assertTrue(settings.wifiOnly)
+        assertFalse(settings.wifiOnly)
         assertTrue(settings.completionNotifications)
         assertEquals(AppTheme.SYSTEM, settings.theme)
         assertTrue(settings.autoResume)

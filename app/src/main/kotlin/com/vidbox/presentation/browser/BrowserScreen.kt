@@ -63,7 +63,7 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
             settings.allowFileAccess = false
             settings.allowContentAccess = false
             // Defense in depth: explicit platform defaults for everything security-relevant.
-            settings.safeBrowsingMode = WebSettings.SAFE_BROWSING_ENABLED
+            // (Safe Browsing is on by default and pinned on by the manifest meta-data.)
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             settings.mediaPlaybackRequiresUserGesture = true
             settings.setSupportZoom(true)

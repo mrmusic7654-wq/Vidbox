@@ -202,7 +202,7 @@ private fun <T> SettingChoice(icon: ImageVector, title: String, subtitle: String
     label: (T) -> String, onSelect: (T) -> Unit) {
     var menu by remember { mutableStateOf(false) }
     Box {
-        SettingAction(icon, title, subtitle) { menu = true }
+        SettingAction(icon, title, subtitle, onClick = { menu = true })
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
             options.forEach { option -> DropdownMenuItem(text = { Text(label(option)) },
                 trailingIcon = { if (selected == option) Icon(VidboxIcons.check, null) }, onClick = { menu = false; onSelect(option) }) }

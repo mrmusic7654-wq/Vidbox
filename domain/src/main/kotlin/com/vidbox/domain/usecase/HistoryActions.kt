@@ -4,6 +4,7 @@ import com.vidbox.domain.model.*
 import com.vidbox.domain.repository.*
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeout
 
 class HistoryActions @Inject constructor(
     private val repository: DownloadRepository,
@@ -13,6 +14,12 @@ class HistoryActions @Inject constructor(
     suspend fun delete(id: String, deleteFile: Boolean) {
         val record = repository.get(id) ?: return
         check(record.state.isTerminal) { "Stop the download before removing it" }
+        if (record.state == DownloadState.CANCELLED && record.needsCleanup) {
+            // The owner must finish closing writers before a cancelled task can be removed.
+            withTimeout(8000) {
+                repository.observeActive().first { rows -> rows.none { it.id == id && it.needsCleanup } }
+            }
+        }
         if (deleteFile) record.outputUri?.let { storage.delete(it) }
         downloader.discard(id)
         repository.removeHistory(id)

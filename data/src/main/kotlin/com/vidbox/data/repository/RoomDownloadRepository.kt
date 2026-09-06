@@ -70,7 +70,7 @@ class RoomDownloadRepository @Inject constructor(
             etaSeconds = progress.etaSeconds?.takeIf { it >= 0 }, resumeSupported = progress.resumeSupported))
     }
     override suspend fun pending(id: String, uri: String?) = database.withTransaction {
-        dao.get(id)?.let { dao.update(it.copy(pendingUri = uri)) }
+        dao.get(id)?.let { dao.update(it.copy(pendingUri = uri)) }; Unit
     }
     override suspend fun complete(id: String, stored: StoredMedia): Boolean = database.withTransaction {
         val row = dao.get(id) ?: return@withTransaction false
@@ -82,10 +82,10 @@ class RoomDownloadRepository @Inject constructor(
         true
     }
     override suspend fun setMissing(id: String, missing: Boolean) = database.withTransaction {
-        dao.get(id)?.takeIf { it.fileMissing != missing }?.let { dao.update(it.copy(fileMissing = missing)) }
+        dao.get(id)?.takeIf { it.fileMissing != missing }?.let { dao.update(it.copy(fileMissing = missing)) }; Unit
     }
     override suspend fun cleaned(id: String) = database.withTransaction {
-        dao.get(id)?.let { dao.update(it.copy(needsCleanup = false, pendingUri = null)) }
+        dao.get(id)?.let { dao.update(it.copy(needsCleanup = false, pendingUri = null)) }; Unit
     }
     override suspend fun removeHistory(id: String) = dao.removeTerminal(id)
     override suspend fun clearTerminalHistory() = dao.clearTerminal()

@@ -34,8 +34,10 @@ class DataStoreSettingsRepository @Inject constructor(@ApplicationContext contex
     override suspend fun update(transform: (AppSettings) -> AppSettings) {
         store.edit { prefs ->
             val next = transform(decode(prefs))
-            if (next.destinationTree == null) prefs.remove(Keys.tree) else prefs[Keys.tree] = next.destinationTree
-            if (next.destinationLabel == null) prefs.remove(Keys.label) else prefs[Keys.label] = next.destinationLabel
+            val tree = next.destinationTree
+            val label = next.destinationLabel
+            if (tree == null) prefs.remove(Keys.tree) else prefs[Keys.tree] = tree
+            if (label == null) prefs.remove(Keys.label) else prefs[Keys.label] = label
             prefs[Keys.quality] = next.defaultQuality.takeIf { it in setOf(0, 360, 480, 720, 1080, 1440, 2160) } ?: 1080
             prefs[Keys.container] = next.defaultContainer.takeIf { it in setOf("mp4", "webm", "mkv") } ?: "mp4"
             prefs[Keys.wifi] = next.wifiOnly

@@ -59,6 +59,7 @@ dependencies {
     implementation(project(":data"))
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)
+    implementation(libs.documentfile)
     implementation(libs.lifecycle.runtime)
     implementation(libs.lifecycle.compose)
     implementation(libs.lifecycle.viewmodel)

@@ -18,6 +18,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions { unitTests.isIncludeAndroidResources = true }
+    packaging { jniLibs { useLegacyPackaging = true; keepDebugSymbols += "**/*.so" } }
     sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
 }
 kotlin { jvmToolchain(17) }

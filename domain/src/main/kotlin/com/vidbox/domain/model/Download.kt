@@ -51,6 +51,7 @@ data class DownloadRecord(
         (downloadedBytes.toDouble() / it * 100).toFloat().coerceIn(0f, 100f)
     }
     val canPause: Boolean get() = state == DownloadState.QUEUED ||
+        (state == DownloadState.PAUSED && pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI)) ||
         (state in setOf(DownloadState.DOWNLOADING, DownloadState.EXTRACTING) && resumeSupported)
 }
 

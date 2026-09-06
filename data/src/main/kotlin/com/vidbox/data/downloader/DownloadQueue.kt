@@ -26,7 +26,7 @@ class DownloadQueue @Inject constructor(
         private set
     private data class Snapshot(val records: List<DownloadRecord>, val settings: AppSettings, val network: NetworkStatus)
 
-    suspend fun run(onTerminal: (DownloadRecord) -> Unit = {}) = ownership.withLock {
+    suspend fun run(onTerminal: (DownloadRecord) -> Unit = {}): Unit = ownership.withLock {
         isRunning = true
         try {
             // A sticky-service restart adopts interrupted work. Force-stop still requires opening the app.
@@ -85,6 +85,7 @@ class DownloadQueue @Inject constructor(
                     jobs.isEmpty() && !pending
                 }
             }
+            Unit
         } finally { isRunning = false }
     }
 
@@ -133,6 +134,29 @@ class DownloadQueue @Inject constructor(
             }
             logger.event("download.failed", record.id, mapOf("code" to mapped.code.name, "type" to error.javaClass.simpleName))
         }
+    }
+
+    /** A short WorkManager recovery pass never starts a dataSync service from a restricted background context. */
+    suspend fun prepareRecovery(): Boolean {
+        if (!ownership.tryLock()) return false
+        try {
+            val rows = repository.active()
+            rows.filter { it.state.isRunning }.forEach {
+                repository.transition(it.id, setOf(it.state), DownloadState.QUEUED, error = Errors.of(ErrorCode.INTERRUPTED))
+            }
+            for (row in rows.filter { it.needsCleanup }) {
+                try {
+                    row.pendingUri?.takeIf { it != row.outputUri }?.let { storage.delete(it) }
+                    downloader.discard(row.id)
+                    repository.cleaned(row.id)
+                } catch (error: Exception) {
+                    if (error is CancellationException) throw error
+                    logger.event("cleanup.failed", row.id, mapOf("code" to ErrorMapper.from(error).code.name))
+                }
+            }
+            return repository.active().any { it.state == DownloadState.QUEUED || it.pauseReason == PauseReason.SYSTEM ||
+                it.pauseReason == PauseReason.NETWORK || it.pauseReason == PauseReason.WIFI }
+        } finally { ownership.unlock() }
     }
 
     suspend fun pauseForSystemLimit() {

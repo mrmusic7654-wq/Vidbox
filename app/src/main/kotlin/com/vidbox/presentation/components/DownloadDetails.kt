@@ -24,7 +24,7 @@ fun DownloadDetails(record: DownloadRecord, onDismiss: () -> Unit, onPlay: (() -
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 if (playableVideo) {
                     TextButton(onClick = { onDismiss(); onPlay?.invoke() }) {
-                        Icon(Icons.Rounded.PlayArrow, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
+                        Icon(VidboxIcons.play, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
                         Text("Play in Vidbox")
                     }
                 }

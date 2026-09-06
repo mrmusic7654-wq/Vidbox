@@ -87,6 +87,37 @@ class DownloadQueueTest {
         assertEquals(DownloadState.COMPLETED, repo.get(id)!!.state)
     }
 
+    @Test fun autoResumeDisabledKeepsNetworkPausedWorkWaitingForTheUser() = runBlocking {
+        val id = repo.enqueue(testSpec())
+        prefs.update { it.copy(autoResume = false) }
+        val calls = MutableStateFlow(0)
+        val engine = object : Downloader {
+            override suspend fun download(record: DownloadRecord, onProgress: suspend (DownloadProgress) -> Unit): StagedMedia {
+                calls.update { it + 1 }
+                onProgress(DownloadProgress(DownloadState.DOWNLOADING, 4, 8, resumeSupported = true))
+                if (calls.value == 1) awaitCancellation()
+                return StagedMedia("/test/$id", "video/mp4", 8)
+            }
+            override suspend fun discard(id: String) = Unit
+        }
+        val owner = queue(engine)
+        val job = launch(Dispatchers.Default) { owner.run() }
+        withTimeout(8000) { calls.first { it == 1 } }
+        network.status.value = NetworkStatus()
+        withTimeout(8000) { repo.observeActive().first { it.singleOrNull()?.pauseReason == PauseReason.NETWORK } }
+        // Connection returns, but the setting says a user action is required to continue.
+        network.status.value = NetworkStatus(connected = true, wifi = true, metered = false)
+        withTimeout(8000) { job.join() }
+        assertFalse(owner.isRunning)
+        assertEquals(1, calls.value)
+        assertEquals(DownloadState.PAUSED, repo.get(id)!!.state)
+        // An explicit resume still completes the transfer.
+        assertTrue(repo.transition(id, setOf(DownloadState.PAUSED), DownloadState.QUEUED))
+        val second = launch(Dispatchers.Default) { owner.run() }
+        withTimeout(8000) { second.join() }
+        assertEquals(DownloadState.COMPLETED, repo.get(id)!!.state)
+    }
+
     @Test fun cancelWaitsForWriterThenCleansTemporaryFiles() = runBlocking {
         val id = repo.enqueue(testSpec())
         val started = CompletableDeferred<Unit>()

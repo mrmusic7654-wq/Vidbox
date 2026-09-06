@@ -32,7 +32,7 @@ import java.util.Locale
 fun BrandMark(size: Dp = 40.dp) {
     Box(Modifier.size(size).clip(RoundedCornerShape(size / 3)).background(MaterialTheme.colorScheme.primary)
         .semantics { contentDescription = "Vidbox logo" }, contentAlignment = Alignment.Center) {
-        Icon(Icons.Rounded.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(size * 0.72f).offset(y = (-2).dp))
+        Icon(VidboxIcons.play, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(size * 0.72f).offset(y = (-2).dp))
         Box(Modifier.align(Alignment.BottomCenter).padding(bottom = size * 0.18f).size(size * 0.4f, 2.dp)
             .background(MaterialTheme.colorScheme.onPrimary, CircleShape))
     }
@@ -42,9 +42,9 @@ fun BrandMark(size: Dp = 40.dp) {
 fun MediaThumbnail(url: String?, modifier: Modifier = Modifier, video: Boolean = true, file: Boolean = false, pixels: Int = 256) {
     Box(modifier.clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
         Icon(when {
-            file -> Icons.Rounded.InsertDriveFile
-            video -> Icons.Rounded.Movie
-            else -> Icons.Rounded.MusicNote
+            file -> VidboxIcons.file
+            video -> VidboxIcons.video
+            else -> VidboxIcons.audio
         }, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f), modifier = Modifier.size(30.dp))
         if (url != null) AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(url).size(pixels).crossfade(true).build(),
             contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize())
@@ -80,7 +80,7 @@ fun InfoBanner(text: String, error: Boolean = false, action: String? = null, onA
     val foreground = if (error) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer
     Surface(shape = RoundedCornerShape(14.dp), color = background) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(if (error) Icons.Rounded.ErrorOutline else Icons.Rounded.Info, null, Modifier.size(20.dp), tint = foreground)
+            Icon(if (error) VidboxIcons.error else VidboxIcons.info, null, Modifier.size(20.dp), tint = foreground)
             Text(text, color = foreground, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f).padding(start = 10.dp))
             if (action != null) TextButton(onClick = onAction) { Text(action, color = foreground) }
         }

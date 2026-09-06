@@ -35,6 +35,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.vidbox.domain.model.AppTheme
 import com.vidbox.domain.util.DisplayFormat
+import com.vidbox.presentation.components.VidboxIcons
 import com.vidbox.presentation.theme.VidboxTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -167,12 +168,12 @@ private fun PlayerScreen(activity: Activity, uri: Uri, title: String, mime: Stri
         Row(Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.45f)).padding(horizontal = 6.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { activity.finish() }, modifier = Modifier.testTag("player_back")) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back to Vidbox", tint = Color.White)
+                Icon(VidboxIcons.back, "Back to Vidbox", tint = Color.White)
             }
             Text(title, style = MaterialTheme.typography.titleSmall, color = Color.White,
                 maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             IconButton(onClick = { openExternally() }, modifier = Modifier.testTag("player_external")) {
-                Icon(Icons.Rounded.OpenInNew, "Open in another app", tint = Color.White)
+                Icon(VidboxIcons.openExternally, "Open in another app", tint = Color.White)
             }
         }
 
@@ -182,7 +183,7 @@ private fun PlayerScreen(activity: Activity, uri: Uri, title: String, mime: Stri
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (failed) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Icon(Icons.Rounded.ErrorOutline, null, tint = Color.White)
+                    Icon(VidboxIcons.error, null, tint = Color.White)
                     Text("This device cannot play this file format.", color = Color.White,
                         style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 }
@@ -209,7 +210,7 @@ private fun PlayerScreen(activity: Activity, uri: Uri, title: String, mime: Stri
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 if (failed) {
                     Button(onClick = { openExternally() }) {
-                        Icon(Icons.Rounded.OpenInNew, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
+                        Icon(VidboxIcons.openExternally, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
                         Text("Open in another app")
                     }
                 } else if (prepared) {
@@ -218,7 +219,7 @@ private fun PlayerScreen(activity: Activity, uri: Uri, title: String, mime: Stri
                         if (playing) { current.pause(); playing = false }
                         else { current.start(); playing = true }
                     }, modifier = Modifier.testTag("player_play_pause")) {
-                        Icon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (playing) "Pause" else "Play")
+                        Icon(if (playing) VidboxIcons.pause else VidboxIcons.play, if (playing) "Pause" else "Play")
                     }
                 }
             }

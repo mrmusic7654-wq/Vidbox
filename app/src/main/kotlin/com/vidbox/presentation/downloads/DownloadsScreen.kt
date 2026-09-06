@@ -26,7 +26,7 @@ fun DownloadsScreen(records: List<DownloadRecord>, notificationsAllowed: Boolean
         }
         if (!notificationsAllowed) item { InfoBanner("Enable notifications to see background progress and controls.", action = "Enable", onAction = onNotifications) }
         if (records.isEmpty()) item {
-            EmptyState(Icons.Rounded.CloudDownload, "Nothing in the queue", "Downloads continue here when you leave the app. Completed files move to your library.", action = "Add a link", onAction = onAddLink)
+            EmptyState(VidboxIcons.cloudDownload, "Nothing in the queue", "Downloads continue here when you leave the app. Completed files move to your library.", action = "Add a link", onAction = onAddLink)
         } else {
             items(records, key = { it.id }) { DownloadCard(it, callbacks) }
             item { Text("Some sources cannot resume at the exact byte. Vidbox safely restarts those transfers instead of appending incompatible data.",

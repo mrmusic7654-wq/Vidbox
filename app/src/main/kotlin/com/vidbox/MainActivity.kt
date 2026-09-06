@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
         consume(intent)
         setContent {
             val prefs by settings.state.collectAsStateWithLifecycle()
-            VidboxTheme(prefs.theme) {
+            VidboxTheme(prefs.theme, prefs.dynamicColors) {
                 VidboxApp(home, downloads, history, browser, settings, notificationPermission,
                     onRequestNotifications = ::requestNotifications,
                     onChooseFolder = { folderPicker.launch(prefs.destinationTree?.let(Uri::parse)) },

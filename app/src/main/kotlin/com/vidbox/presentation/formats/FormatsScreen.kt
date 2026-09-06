@@ -35,7 +35,7 @@ fun FormatsScreen(state: HomeState, onBack: () -> Unit, onMode: (Boolean) -> Uni
     BackHandler { if (!state.enqueueing) onBack() }
     Scaffold(containerColor = MaterialTheme.colorScheme.background,
         topBar = { TopAppBar(title = { Text("Choose your download", style = MaterialTheme.typography.titleMedium) },
-            navigationIcon = { IconButton(onClick = onBack, enabled = !state.enqueueing) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back to home") } },
+            navigationIcon = { IconButton(onClick = onBack, enabled = !state.enqueueing) { Icon(VidboxIcons.back, "Back to home") } },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)) },
         snackbarHost = { SnackbarHost(snackbarHost) },
         bottomBar = {
@@ -48,12 +48,16 @@ fun FormatsScreen(state: HomeState, onBack: () -> Unit, onMode: (Boolean) -> Uni
                             Text(sizeLabel(selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    Button(onClick = onDownload, enabled = state.selected != null && !state.enqueueing,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp).testTag("download_button"), shape = RoundedCornerShape(14.dp)) {
-                        if (state.enqueueing) CircularProgressIndicator(Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-                        else Icon(Icons.Rounded.Download, null, Modifier.size(22.dp))
-                        Spacer(Modifier.width(9.dp)); Text(if (state.enqueueing) "Adding to queue…" else "Download media")
-                    }
+                    DownloadButton(
+                        when {
+                            state.enqueueing -> DownloadButtonState.DOWNLOADING
+                            state.error != null -> DownloadButtonState.FAILED
+                            else -> DownloadButtonState.READY
+                        },
+                        onClick = onDownload,
+                        label = if (state.enqueueing) "Adding to queue…" else "Download media",
+                        enabled = state.selected != null,
+                        modifier = Modifier.fillMaxWidth().testTag("download_button"))
                 }
             }
         }) { insets ->
@@ -85,9 +89,9 @@ fun FormatsScreen(state: HomeState, onBack: () -> Unit, onMode: (Boolean) -> Uni
                         "This source's video is only available in codecs that can't be placed in MP4 without re-encoding, so Vidbox shows the audio options only.")
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (state.options.any { it.primary.hasVideo }) FilterChip(selected = state.video, onClick = { onMode(true) },
-                            label = { Text("Video") }, leadingIcon = { Icon(Icons.Rounded.Movie, null, Modifier.size(18.dp)) })
+                            label = { Text("Video") }, leadingIcon = { Icon(VidboxIcons.video, null, Modifier.size(18.dp)) })
                         if (state.options.any { !it.primary.hasVideo }) FilterChip(selected = !state.video, onClick = { onMode(false) },
-                            label = { Text("Audio only") }, leadingIcon = { Icon(Icons.Rounded.MusicNote, null, Modifier.size(18.dp)) })
+                            label = { Text("Audio only") }, leadingIcon = { Icon(VidboxIcons.audio, null, Modifier.size(18.dp)) })
                     }
                     if (containers.size > 1) {
                         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -133,7 +137,7 @@ private fun FormatCard(option: FormatSelection, selected: Boolean, onSelect: () 
                     Text(listOfNotNull(option.container.uppercase(), sizeLabel(option).takeIf { it.isNotEmpty() })
                         .joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (option.requiresMerging) Icon(Icons.Rounded.MergeType, "Merging required", Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                if (option.requiresMerging) Icon(VidboxIcons.processing, "Merging required", Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
             }
             if (selected) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

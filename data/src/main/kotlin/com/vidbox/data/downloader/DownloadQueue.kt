@@ -64,7 +64,7 @@ class DownloadQueue @Inject constructor(
                             }
                         }
                         if (record.state == DownloadState.PAUSED && record.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI)
-                            && snapshot.network.permits(snapshot.settings)) {
+                            && snapshot.network.permits(snapshot.settings) && snapshot.settings.autoResume) {
                             repository.transition(record.id, setOf(DownloadState.PAUSED), DownloadState.QUEUED)
                         }
                         if (record.state == DownloadState.QUEUED && record.id !in jobs) {
@@ -82,7 +82,8 @@ class DownloadQueue @Inject constructor(
                     }
                     val pending = snapshot.records.any {
                         it.state == DownloadState.QUEUED || it.state.isRunning ||
-                            (it.state == DownloadState.PAUSED && it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI))
+                            (it.state == DownloadState.PAUSED && it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI) &&
+                                snapshot.settings.autoResume)
                     }
                     jobs.isEmpty() && !pending
                 }

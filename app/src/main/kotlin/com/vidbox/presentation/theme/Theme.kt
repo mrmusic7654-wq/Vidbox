@@ -1,10 +1,12 @@
 package com.vidbox.presentation.theme
 
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -43,8 +45,13 @@ private val Type = Typography(
 )
 
 @Composable
-fun VidboxTheme(theme: AppTheme, content: @Composable () -> Unit) {
+fun VidboxTheme(theme: AppTheme, dynamicColors: Boolean = true, content: @Composable () -> Unit) {
     val dark = when (theme) { AppTheme.SYSTEM -> isSystemInDarkTheme(); AppTheme.DARK -> true; AppTheme.LIGHT -> false }
+    val context = LocalContext.current
+    // Material You palettes on Android 12+ unless the user prefers Vidbox's own identity.
+    val colorScheme = if (dynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else if (dark) Dark else Light
     val view = LocalView.current
     SideEffect {
         (view.context as? Activity)?.window?.let { window ->
@@ -54,5 +61,5 @@ fun VidboxTheme(theme: AppTheme, content: @Composable () -> Unit) {
             }
         }
     }
-    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = Type, content = content)
+    MaterialTheme(colorScheme = colorScheme, typography = Type, content = content)
 }

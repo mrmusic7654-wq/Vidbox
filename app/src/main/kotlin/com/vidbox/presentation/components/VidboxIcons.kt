@@ -3,6 +3,7 @@ package com.vidbox.presentation.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
@@ -107,7 +108,7 @@ object VidboxIcons {
     val notifications: ImageVector = Icons.Rounded.NotificationsNone
     val notificationsOff: ImageVector = Icons.Rounded.NotificationsOff
     val appearance: ImageVector = Icons.Rounded.Palette
-    val sort: ImageVector = Icons.Rounded.Sort
+    val sort: ImageVector = Icons.AutoMirrored.Rounded.Sort
     val chevronRight: ImageVector = Icons.Rounded.ChevronRight
     val info: ImageVector = Icons.Rounded.Info
     val error: ImageVector = Icons.Rounded.ErrorOutline

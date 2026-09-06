@@ -10,6 +10,7 @@ import android.webkit.WebViewDatabase
  * Only Vidbox's own WebView profile is touched; never other apps or system state.
  */
 object BrowsingData {
+    @Suppress("DEPRECATION") // clearFormData is the only form-data API and remains functional.
     fun clear(context: Context) {
         CookieManager.getInstance().apply { removeAllCookies(null); flush() }
         WebStorage.getInstance().deleteAllData()

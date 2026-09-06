@@ -35,20 +35,26 @@ object BrowserLinks {
             value.startsWith("http://", ignoreCase = true) -> "https://" + value.substringAfter("://")
             else -> "https://$value"
         }
-        val uri = runCatching { URI(withScheme) }.getOrNull() ?: return SEARCH + URLEncoder.encode(value, "UTF-8")
-        val host = uri.host
-        if (host.isNullOrBlank()) return SEARCH + URLEncoder.encode(value, "UTF-8")
-        // java.net.URI percent-escapes instead of punyencoding non-ASCII hosts, which no
-        // server resolves; international names are converted to their IDN ASCII form.
-        if (host.any { it.code > 127 }) {
-            val ascii = runCatching { IDN.toASCII(host) }.getOrNull() ?: return SEARCH + URLEncoder.encode(value, "UTF-8")
-            return "https://" + ascii +
-                (if (uri.port in 1..65535) ":${uri.port}" else "") +
-                (uri.rawPath ?: "") +
-                (uri.rawQuery?.let { "?$it" } ?: "") +
-                (uri.rawFragment?.let { "#$it" } ?: "")
-        }
+        // java.net.URI rejects non-ASCII hostnames outright, so international names are
+        // converted to their IDN ASCII (punycode) form before parsing.
+        val candidate = if (withScheme.any { it.code > 127 }) punycodeHost(withScheme)
+            ?: return SEARCH + URLEncoder.encode(value, "UTF-8") else withScheme
+        val uri = runCatching { URI(candidate) }.getOrNull() ?: return SEARCH + URLEncoder.encode(value, "UTF-8")
+        if (uri.host.isNullOrBlank()) return SEARCH + URLEncoder.encode(value, "UTF-8")
         return uri.toASCIIString()
+    }
+
+    /** Replaces only an international host with punycode; path/query stay percent-encodable. */
+    private fun punycodeHost(input: String): String? {
+        val schemeEnd = input.indexOf("://")
+        if (schemeEnd < 0) return null
+        val rest = input.substring(schemeEnd + 3)
+        val authority = rest.substringBefore('/').substringBefore('?').substringBefore('#')
+        val hostPort = authority.substringAfterLast('@')
+        val host = hostPort.substringBefore(':')
+        if (!host.any { it.code > 127 }) return input
+        val ascii = runCatching { IDN.toASCII(host) }.getOrNull()?.takeIf(String::isNotBlank) ?: return null
+        return input.substring(0, schemeEnd + 3) + (ascii + hostPort.removePrefix(host)) + rest.removePrefix(authority)
     }
 
     /** RFC 6266/5987 Content-Disposition filename, or null when the header carries none. */

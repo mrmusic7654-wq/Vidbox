@@ -97,10 +97,11 @@ class BrowserViewModelTest {
         viewModel.downloadStart("https://example.com/paper.pdf", null, "application/pdf", 2048)
         assertFalse(viewModel.state.value.pending!!.isMedia)
         viewModel.confirmDownload()
+        // Queued rows live in the active set; history only keeps terminal rows.
         withTimeout(5000) {
-            while (repository.active().size + repository.observeHistory(HistoryQuery()).first().size < 2) delay(50)
+            while (repository.observeRecent(10).first().size < 2) delay(50)
         }
-        val rows = repository.observeHistory(HistoryQuery()).first()
+        val rows = repository.observeRecent(10).first()
         assertEquals(setOf(DownloadKind.MEDIA, DownloadKind.FILE), rows.map { it.spec.kind }.toSet())
     }
 

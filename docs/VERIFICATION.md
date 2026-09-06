@@ -8,7 +8,23 @@ The authoring sandbox did not contain Java or an Android SDK and could not reach
 
 ## Evidence status
 
-Final run links and pass/fail totals are recorded here after the implementation's CI verification completes. Earlier failed runs are intentionally retained in Actions as part of the incremental build history; they are not passing evidence.
+Verified application-code revision: [`3e3cd643c0941c5c1c037dce5980b7cd0842988a`](https://github.com/mrmusic7654-wq/Vidbox/commit/3e3cd643c0941c5c1c037dce5980b7cd0842988a).
+
+[Android verification run 34018751575](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34018751575) completed successfully on September 6, 2026. Both the build and device-test jobs passed.
+
+| Check | Verified result |
+| --- | --- |
+| `assembleDebug` | Passed; signed debug APK produced |
+| `assembleRelease` / `bundleRelease` | Passed with R8/resource shrinking; unsigned release outputs produced |
+| `lintDebug` | Passed with no errors; advisory warnings remain in the reports |
+| `:domain:test` / `testDebugUnitTest` | 44 tests passed, zero failures/errors/skips |
+| `:app:connectedDebugAndroidTest` / `:data:connectedDebugAndroidTest` | 10 tests passed, zero failures/errors/skips, on API 35 x86_64 |
+| Production application launch | Installed the debug APK and launched the real `VidboxApplication`/`MainActivity`, separately from the Hilt test application |
+| Native packaging audit | Required executables present; 518 packaged 64-bit ELF payloads verified for 16 KB LOAD alignment |
+
+Download the [APK/AAB artifact](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34018751575/artifacts/9984841601), [JVM/lint reports](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34018751575/artifacts/9984837387), or [device reports and launch screenshot](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34018751575/artifacts/9984818050). Artifacts expire after the workflow's 14-day retention period; rerun the workflow to regenerate them. Release signing credentials were not supplied and no production signing claim is made.
+
+This evidence covers the application code at the revision above. This verification-record update changes documentation only. Earlier failed runs remain in Actions as part of the incremental build history; they are not passing evidence. Emulator and ELF-audit results do not replace the physical-device and distribution checks below.
 
 ## Automated coverage
 

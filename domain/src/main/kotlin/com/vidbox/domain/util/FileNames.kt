@@ -8,6 +8,11 @@ object FileNames {
     private val reserved = Regex("(?i)^(con|prn|aux|nul|com[0-9]|lpt[0-9])$")
     val extensions = setOf("mp4", "m4v", "webm", "mkv", "mov", "avi", "flv", "3gp", "ts",
         "m4a", "mp3", "aac", "opus", "ogg", "oga", "wav", "flac", "weba")
+    val audioExtensions = setOf("m4a", "mp3", "aac", "opus", "ogg", "oga", "wav", "flac", "weba")
+    /** Non-media formats the browser offers as plain file downloads (never page formats). */
+    val fileExtensions = setOf("pdf", "zip", "rar", "7z", "tar", "gz", "bz2", "xz", "apk", "exe",
+        "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "csv", "epub", "mobi",
+        "iso", "img", "bin", "torrent")
 
     fun sanitize(input: String, maxBytes: Int = 160): String {
         require(maxBytes >= 8)
@@ -31,8 +36,36 @@ object FileNames {
 
     fun output(title: String, id: String, extension: String): String {
         require(id.matches(Regex("[a-f0-9-]{36}")))
-        require(extension in extensions)
+        // Media containers and generic file extensions (pdf, zip, …) share the same safe rule.
+        require(extension.matches(Regex("[A-Za-z0-9]{1,16}")))
         return "${sanitize(title)}-${id.take(8)}.$extension"
+    }
+
+    fun hasVideo(extension: String): Boolean = extension.lowercase() !in audioExtensions
+
+    fun isDownloadable(extension: String): Boolean =
+        extension.lowercase() in extensions || extension.lowercase() in fileExtensions
+
+    /** Lowercase extension from a URL path or a Content-Disposition-style filename, if any. */
+    fun extensionOf(url: String, fileName: String? = null): String? {
+        val raw = fileName?.trim()?.takeIf { it.isNotBlank() } ?: run {
+            val path = url.substringBefore('?').substringBefore('#')
+            val last = path.substringAfterLast('/')
+            if (last.isBlank()) return null
+            last
+        }
+        val dot = raw.lastIndexOf('.')
+        if (dot <= 0 || dot == raw.length - 1) return null
+        return raw.substring(dot + 1).lowercase().filter { it.isLetterOrDigit() }.take(16)
+            .takeIf { it.isNotBlank() }
+    }
+
+    /** A safe title stem derived from the URL, or null when the URL has no usable filename. */
+    fun nameFromUrl(url: String): String? {
+        val path = url.substringBefore('?').substringBefore('#')
+        val last = path.substringAfterLast('/')
+        if (last.isBlank() || !last.contains('.')) return null
+        return sanitize(last.substringBeforeLast('.')).takeIf { it != "Media" }
     }
 
     fun mime(extension: String, hasVideo: Boolean): String = when (extension.lowercase()) {

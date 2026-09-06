@@ -13,6 +13,9 @@ enum class DownloadState {
 enum class PauseReason { USER, NETWORK, WIFI, SYSTEM }
 
 @Serializable
+enum class DownloadKind { MEDIA, FILE }
+
+@Serializable
 data class DownloadSpec(
     val url: String,
     val title: String,
@@ -23,6 +26,10 @@ data class DownloadSpec(
     val isDirect: Boolean,
     /** Snapshot the destination at enqueue time; changing settings never moves an in-flight file. */
     val destinationTree: String?,
+    /** FILE marks a generic web download (PDF, archive, image, …) saved under Downloads/Vidbox. */
+    val kind: DownloadKind = DownloadKind.MEDIA,
+    /** Reported by the source for generic files so they open with the right app and folder. */
+    val mimeType: String? = null,
 )
 
 data class DownloadRecord(

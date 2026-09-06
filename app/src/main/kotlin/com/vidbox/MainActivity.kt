@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.*
 import com.vidbox.domain.util.UrlValidator
 import com.vidbox.presentation.VidboxApp
+import com.vidbox.presentation.browser.BrowserViewModel
 import com.vidbox.presentation.downloads.DownloadsViewModel
 import com.vidbox.presentation.history.HistoryViewModel
 import com.vidbox.presentation.home.HomeViewModel
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
     private val home: HomeViewModel by viewModels()
     private val downloads: DownloadsViewModel by viewModels()
     private val history: HistoryViewModel by viewModels()
+    private val browser: BrowserViewModel by viewModels()
     private val settings: SettingsViewModel by viewModels()
     private var showDownloads by mutableStateOf(false)
     private var notificationPermission by mutableStateOf(true)
@@ -64,7 +66,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val prefs by settings.state.collectAsStateWithLifecycle()
             VidboxTheme(prefs.theme) {
-                VidboxApp(home, downloads, history, settings, notificationPermission,
+                VidboxApp(home, downloads, history, browser, settings, notificationPermission,
                     onRequestNotifications = ::requestNotifications,
                     onChooseFolder = { folderPicker.launch(prefs.destinationTree?.let(Uri::parse)) },
                     openDownloads = showDownloads, onNavigationConsumed = { showDownloads = false })

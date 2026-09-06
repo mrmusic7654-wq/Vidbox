@@ -4,7 +4,7 @@ import java.util.Locale
 
 object DisplayFormat {
     fun bytes(value: Long?): String {
-        if (value == null || value < 0) return "Size unknown"
+        if (value == null || value < 0) return "—"
         if (value < 1024) return "$value B"
         val units = listOf("KB", "MB", "GB", "TB")
         var amount = value.toDouble() / 1024

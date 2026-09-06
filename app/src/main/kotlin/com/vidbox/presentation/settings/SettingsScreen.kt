@@ -34,7 +34,7 @@ fun SettingsScreen(settings: AppSettings, onUpdate: ((AppSettings) -> AppSetting
         }
         item {
             SettingsGroup("STORAGE") {
-                SettingAction(Icons.Rounded.FolderOpen, "Download location", settings.destinationLabel ?: "Videos: Movies/Vidbox\nAudio: Music/Vidbox", onFolder)
+                SettingAction(Icons.Rounded.FolderOpen, "Download location", settings.destinationLabel ?: "Videos: Movies/Vidbox\nAudio: Music/Vidbox\nFiles: Downloads/Vidbox", onFolder)
                 if (settings.destinationTree != null) TextButton(onClick = { onUpdate { it.copy(destinationTree = null, destinationLabel = null) } },
                     modifier = Modifier.padding(start = 46.dp)) { Text("Use device media folders") }
                 Text("Location changes apply to new downloads. No broad storage access is needed.", style = MaterialTheme.typography.bodySmall,

@@ -36,10 +36,15 @@ fun DownloadCard(record: DownloadRecord, callbacks: DownloadCallbacks, compact: 
         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.Top) {
-                MediaThumbnail(record.spec.thumbnailUrl, Modifier.size(if (compact) 62.dp else 72.dp, if (compact) 58.dp else 68.dp), record.spec.selection.primary.hasVideo)
+                val file = record.spec.kind == DownloadKind.FILE
+                MediaThumbnail(record.spec.thumbnailUrl, Modifier.size(if (compact) 62.dp else 72.dp, if (compact) 58.dp else 68.dp),
+                    record.spec.selection.primary.hasVideo, file = file)
                 Column(Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(record.fileName, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    Text("${record.spec.selection.primary.qualityLabel} · ${record.spec.selection.container.uppercase()} · ${DisplayFormat.bytes(record.totalBytes)}",
+                    val label = if (file) record.spec.selection.container.uppercase()
+                        else "${record.spec.selection.primary.qualityLabel} · ${record.spec.selection.container.uppercase()}"
+                    Text(listOfNotNull(label,
+                            record.totalBytes?.let { DisplayFormat.bytes(it) }).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if (record.state.isTerminal) Text(dateLabel(record.completedAt ?: record.createdAt), style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)

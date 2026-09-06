@@ -23,7 +23,7 @@ import com.vidbox.presentation.components.*
 @Composable
 fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<DownloadRecord>, network: NetworkStatus,
     onInput: (String) -> Unit, onPaste: () -> Unit, onAnalyze: () -> Unit, onCancel: () -> Unit,
-    onDownloads: () -> Unit, onHistory: () -> Unit, callbacks: DownloadCallbacks) {
+    onBrowse: () -> Unit, onDownloads: () -> Unit, onHistory: () -> Unit, callbacks: DownloadCallbacks) {
     LazyColumn(Modifier.fillMaxSize().testTag("home_screen"), contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
@@ -62,6 +62,9 @@ fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<Down
                         Icon(Icons.Rounded.VerifiedUser, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("Only save media you own or have permission to download. Secure HTTPS links only.",
                             Modifier.padding(start = 7.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    OutlinedButton(onClick = onBrowse, modifier = Modifier.fillMaxWidth().testTag("home_browse")) {
+                        Icon(Icons.Rounded.Public, null, Modifier.size(19.dp)); Spacer(Modifier.width(8.dp)); Text("Browse websites")
                     }
                 }
             }

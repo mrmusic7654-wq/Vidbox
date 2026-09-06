@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.vidbox.domain.model.DownloadKind
 import com.vidbox.domain.model.DownloadRecord
 import com.vidbox.domain.util.DisplayFormat
 
@@ -17,16 +18,22 @@ fun DownloadDetails(record: DownloadRecord, onDismiss: () -> Unit) {
         text = {
             SelectionContainer {
                 Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    val file = record.spec.kind == DownloadKind.FILE
                     DetailLine("Filename", record.fileName)
                     DetailLine("Status", stateLabel(record))
                     record.error?.let { DetailLine("What happened", it.message) }
                     DetailLine("Source", record.spec.source)
                     DetailLine("Original link", record.spec.url)
-                    DetailLine("Format", "${record.spec.selection.primary.qualityLabel} · ${record.spec.selection.container.uppercase()}")
-                    DetailLine("Format IDs", listOfNotNull(record.spec.selection.primary.id, record.spec.selection.audio?.id).joinToString(" + "))
-                    DetailLine("Video codec", record.spec.selection.primary.videoCodec ?: if (record.spec.selection.primary.hasVideo) "Not reported" else "No video")
-                    DetailLine("Audio codec", record.spec.selection.audio?.audioCodec ?: record.spec.selection.primary.audioCodec ?: "Not reported")
-                    DetailLine("Merging", if (record.spec.selection.requiresMerging) "Separate video + audio · stream copy" else "Not required")
+                    DetailLine(if (file) "File type" else "Format",
+                        if (file) record.mimeType ?: "${record.spec.selection.container.uppercase()} file"
+                        else "${record.spec.selection.primary.qualityLabel} · ${record.spec.selection.container.uppercase()}")
+                    if (!file) {
+                        DetailLine("Format IDs", listOfNotNull(record.spec.selection.primary.id, record.spec.selection.audio?.id).joinToString(" + "))
+                        DetailLine("Video codec", record.spec.selection.primary.videoCodec ?: if (record.spec.selection.primary.hasVideo) "—" else "No video")
+                        DetailLine("Audio codec", record.spec.selection.audio?.audioCodec ?: record.spec.selection.primary.audioCodec
+                            ?: if (record.spec.selection.primary.hasAudio == false) "No audio" else "—")
+                        DetailLine("Merging", if (record.spec.selection.requiresMerging) "Separate video + audio · stream copy" else "Not required")
+                    }
                     DetailLine("Duration", DisplayFormat.duration(record.spec.durationSeconds?.toLong()))
                     DetailLine("File size", DisplayFormat.bytes(record.totalBytes))
                     DetailLine("Transferred", DisplayFormat.bytes(record.downloadedBytes))

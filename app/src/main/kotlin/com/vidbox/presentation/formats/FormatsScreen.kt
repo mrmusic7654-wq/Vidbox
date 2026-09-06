@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -18,10 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.vidbox.domain.model.FormatSelection
+import com.vidbox.domain.model.MediaFormat
 import com.vidbox.domain.util.DisplayFormat
 import com.vidbox.presentation.components.*
 import com.vidbox.presentation.home.HomeState
@@ -31,6 +30,8 @@ import com.vidbox.presentation.home.HomeState
 fun FormatsScreen(state: HomeState, onBack: () -> Unit, onMode: (Boolean) -> Unit, onContainer: (String?) -> Unit,
     onSelect: (String) -> Unit, onDownload: () -> Unit, snackbarHost: SnackbarHostState) {
     val media = state.media ?: return
+    val containers = state.options.filter { it.primary.hasVideo == state.video }
+        .map { it.container }.distinct().sorted()
     BackHandler { if (!state.enqueueing) onBack() }
     Scaffold(containerColor = MaterialTheme.colorScheme.background,
         topBar = { TopAppBar(title = { Text("Choose your download", style = MaterialTheme.typography.titleMedium) },
@@ -80,19 +81,29 @@ fun FormatsScreen(state: HomeState, onBack: () -> Unit, onMode: (Boolean) -> Uni
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Quality & format", style = MaterialTheme.typography.titleLarge)
+                    if (state.videoUnavailable) InfoBanner(
+                        "This source's video is only available in codecs that can't be placed in MP4 without re-encoding, so Vidbox shows the audio options only.")
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (state.options.any { it.primary.hasVideo }) FilterChip(selected = state.video, onClick = { onMode(true) },
                             label = { Text("Video") }, leadingIcon = { Icon(Icons.Rounded.Movie, null, Modifier.size(18.dp)) })
                         if (state.options.any { !it.primary.hasVideo }) FilterChip(selected = !state.video, onClick = { onMode(false) },
                             label = { Text("Audio only") }, leadingIcon = { Icon(Icons.Rounded.MusicNote, null, Modifier.size(18.dp)) })
                     }
-                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(selected = state.container == null, onClick = { onContainer(null) }, label = { Text("All formats") })
-                        state.options.filter { it.primary.hasVideo == state.video }.map { it.container }.distinct().sorted().forEach { container ->
-                            FilterChip(selected = state.container == container, onClick = { onContainer(container) }, label = { Text(container.uppercase()) })
+                    if (containers.size > 1) {
+                        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterChip(selected = state.container == null, onClick = { onContainer(null) }, label = { Text("All formats") })
+                            containers.forEach { container ->
+                                FilterChip(selected = state.container == container, onClick = { onContainer(container) }, label = { Text(container.uppercase()) })
+                            }
                         }
                     }
-                    Text("${state.visibleOptions.size} available options · No re-encoding", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val modeLabel = when {
+                        state.video && containers == listOf("mp4") -> "MP4 video · only qualities this source offers · no re-encoding"
+                        state.video -> "Original video file · saved as-is · no re-encoding"
+                        else -> "Original audio formats · no re-encoding"
+                    }
+                    Text("${state.visibleOptions.size} available · $modeLabel", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             items(state.visibleOptions, key = { it.key }) { option ->
@@ -119,29 +130,53 @@ private fun FormatCard(option: FormatSelection, selected: Boolean, onSelect: () 
                         option.primary.fps?.let { Text("${if (it % 1.0 == 0.0) it.toInt().toString() else it.toString()} fps", style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     }
-                    Text("${option.container.uppercase()} · ${sizeLabel(option)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(listOfNotNull(option.container.uppercase(), sizeLabel(option).takeIf { it.isNotEmpty() })
+                        .joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (option.requiresMerging) Icon(Icons.Rounded.MergeType, "Merging required", Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
             }
             if (selected) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                val primary = option.primary
                 Column(Modifier.padding(start = 2.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    if (primary.hasVideo) Text("Video: ${primary.videoCodec ?: "Not reported"}${primary.width?.let { w -> primary.height?.let { h -> " · $w × $h" } }.orEmpty()}",
-                        style = MaterialTheme.typography.bodySmall)
-                    Text("Audio: ${option.audio?.audioCodec ?: primary.audioCodec ?: if (primary.hasAudio == false) "No audio" else "Not reported"}", style = MaterialTheme.typography.bodySmall)
+                    val primary = option.primary
+                    if (primary.hasVideo) Text(videoLabel(primary), style = MaterialTheme.typography.bodySmall)
+                    when {
+                        option.audio != null -> Text(audioLabel(option.audio), style = MaterialTheme.typography.bodySmall)
+                        primary.hasAudio == false -> Text("No audio track in this stream", style = MaterialTheme.typography.bodySmall)
+                        primary.hasAudio == true -> Text(if (primary.audioCodec != null) "Audio included · ${primary.audioCodec}" else "Audio included", style = MaterialTheme.typography.bodySmall)
+                        else -> Text("Audio track", style = MaterialTheme.typography.bodySmall)
+                    }
                     Text(when {
-                        option.requiresMerging -> "Video-only stream + separate audio · merge required"
+                        option.requiresMerging -> "Video + audio · stream copy merge"
                         !primary.hasVideo -> "Audio only · no merging needed"
                         primary.hasAudio == true -> "Video + audio · no merging needed"
                         primary.hasAudio == false -> "Video only · no audio track"
-                        else -> "Original file · stream details not reported"
+                        else -> "Video + audio"
                     }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Source format ${primary.id}${option.audio?.let { " + ${it.id}" }.orEmpty()}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (option.requiresMerging) Text("Audio is downloaded separately; it is muxed on device without re-encoding.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
     }
 }
 
-private fun sizeLabel(option: FormatSelection): String = (if (option.approximateSize && option.estimatedBytes != null) "≈ " else "") + DisplayFormat.bytes(option.estimatedBytes)
+private fun videoLabel(format: MediaFormat): String {
+    val parts = buildList {
+        format.videoCodec?.let { add("Codec $it") }
+        format.width?.let { w -> format.height?.let { h -> add("$w × $h") } }
+    }
+    return if (parts.isEmpty()) "Video stream" else parts.joinToString(" · ")
+}
+
+private fun audioLabel(format: MediaFormat): String {
+    val parts = buildList {
+        format.audioCodec?.let { add("Codec $it") }
+        format.bitrateKbps?.takeIf { it > 0 }?.let { add("${it.toInt()} kbps") }
+    }
+    return if (parts.isEmpty()) "Separate audio track" else "Separate audio · ${parts.joinToString(" · ")}"
+}
+
+private fun sizeLabel(option: FormatSelection): String =
+    if (option.approximateSize && option.estimatedBytes != null) "≈ ${DisplayFormat.bytes(option.estimatedBytes)}"
+    else option.estimatedBytes?.let { DisplayFormat.bytes(it) }.orEmpty()

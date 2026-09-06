@@ -22,6 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vidbox.domain.model.DownloadRecord
+import com.vidbox.presentation.browser.*
 import com.vidbox.presentation.components.*
 import com.vidbox.presentation.downloads.*
 import com.vidbox.presentation.formats.FormatsScreen
@@ -33,6 +34,7 @@ import kotlinx.coroutines.launch
 
 private enum class Destination(val label: String, val icon: ImageVector, val tag: String) {
     HOME("Home", Icons.Rounded.Home, "nav_home"),
+    BROWSER("Browser", Icons.Rounded.Public, "nav_browser"),
     DOWNLOADS("Downloads", Icons.Rounded.Downloading, "nav_downloads"),
     HISTORY("Library", Icons.Rounded.VideoLibrary, "nav_history"),
     SETTINGS("Settings", Icons.Rounded.Tune, "nav_settings"),
@@ -40,14 +42,15 @@ private enum class Destination(val label: String, val icon: ImageVector, val tag
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: HistoryViewModel, settings: SettingsViewModel,
-    notificationsAllowed: Boolean, onRequestNotifications: () -> Unit, onChooseFolder: () -> Unit,
-    openDownloads: Boolean, onNavigationConsumed: () -> Unit) {
+fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: HistoryViewModel, browser: BrowserViewModel,
+    settings: SettingsViewModel, notificationsAllowed: Boolean, onRequestNotifications: () -> Unit,
+    onChooseFolder: () -> Unit, openDownloads: Boolean, onNavigationConsumed: () -> Unit) {
     var destination by rememberSaveable { mutableStateOf(Destination.HOME) }
     val homeState by home.state.collectAsStateWithLifecycle()
     val active by downloads.active.collectAsStateWithLifecycle()
     val recent by downloads.recent.collectAsStateWithLifecycle()
     val network by downloads.connectivity.collectAsStateWithLifecycle()
+    val browserState by browser.state.collectAsStateWithLifecycle()
     // Do not re-query/decrypt a hidden history page on every active transfer update.
     val historyState = if (destination == Destination.HISTORY) history.state.collectAsStateWithLifecycle().value else HistoryState(loading = false)
     val query by history.query.collectAsStateWithLifecycle()
@@ -131,7 +134,19 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                                 }
                             },
                             onAnalyze = { focus.clearFocus(); home.analyze() }, onCancel = home::cancelAnalysis,
+                            onBrowse = { destination = Destination.BROWSER },
                             onDownloads = { destination = Destination.DOWNLOADS }, onHistory = { destination = Destination.HISTORY }, callbacks = callbacks)
+                        Destination.BROWSER -> BrowserScreen(browser, browserState, notificationsAllowed, onRequestNotifications,
+                            onDownloadPage = { url ->
+                                if (url != null) {
+                                    home.paste(url); home.dismissFormats(); home.analyze()
+                                    destination = Destination.HOME
+                                } else scope.launch { snackbars.showSnackbar("Open a page first, then download from it") }
+                            },
+                            onOpenExternal = { url ->
+                                try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                                catch (_: ActivityNotFoundException) { scope.launch { snackbars.showSnackbar("No browser is installed") } }
+                            })
                         Destination.DOWNLOADS -> DownloadsScreen(active, notificationsAllowed, preferences.maxConcurrent, onRequestNotifications,
                             onAddLink = { destination = Destination.HOME }, callbacks = callbacks)
                         Destination.HISTORY -> HistoryScreen(historyState, query, history::search, history::filter, history::sort, history::more,

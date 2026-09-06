@@ -39,10 +39,13 @@ fun BrandMark(size: Dp = 40.dp) {
 }
 
 @Composable
-fun MediaThumbnail(url: String?, modifier: Modifier = Modifier, video: Boolean = true, pixels: Int = 256) {
+fun MediaThumbnail(url: String?, modifier: Modifier = Modifier, video: Boolean = true, file: Boolean = false, pixels: Int = 256) {
     Box(modifier.clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
-        Icon(if (video) Icons.Rounded.Movie else Icons.Rounded.MusicNote, null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f), modifier = Modifier.size(30.dp))
+        Icon(when {
+            file -> Icons.Rounded.InsertDriveFile
+            video -> Icons.Rounded.Movie
+            else -> Icons.Rounded.MusicNote
+        }, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f), modifier = Modifier.size(30.dp))
         if (url != null) AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(url).size(pixels).crossfade(true).build(),
             contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize())
     }

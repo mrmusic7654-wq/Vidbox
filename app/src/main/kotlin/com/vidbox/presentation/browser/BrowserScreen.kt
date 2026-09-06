@@ -1,5 +1,6 @@
 package com.vidbox.presentation.browser
 
+import android.graphics.Bitmap
 import android.view.HapticFeedbackConstants
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -24,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -65,7 +67,7 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
                     }
                     return false
                 }
-                override fun onPageStarted(view: WebView, url: String?) { browser.pageStarted(url) }
+                override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) { browser.pageStarted(url) }
                 override fun onPageFinished(view: WebView, url: String?) {
                     browser.pageFinished(url, view.canGoBack(), view.canGoForward())
                 }
@@ -199,30 +201,30 @@ private fun RowScope.BrowserDownloadAction(enabled: Boolean, onClick: () -> Unit
             var lastLocal = Offset.Zero
             detectDragGesturesAfterLongPress(
                 onDragStart = { start ->
-                    if (latestEnabled.value) {
+                    if (latestEnabled) {
                         lifting = true
                         lastLocal = start
                         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                        latestStart.value(windowOf(start))
+                        latestStart(windowOf(start))
                     }
                 },
                 onDrag = { change, _ ->
-                    if (latestEnabled.value) {
+                    if (latestEnabled) {
                         change.consume()
                         lastLocal = change.position
-                        latestMove.value(windowOf(change.position))
+                        latestMove(windowOf(change.position))
                     }
                 },
                 onDragEnd = {
                     lifting = false
-                    if (latestEnabled.value) latestEnd.value(windowOf(lastLocal))
+                    if (latestEnabled) latestEnd(windowOf(lastLocal))
                 },
                 onDragCancel = {
                     lifting = false
-                    latestCancel.value()
+                    latestCancel()
                 })
         } else Modifier)) {
-        Button(onClick = { latestClick.value() }, enabled = enabled && !lifting,
+        Button(onClick = { latestClick() }, enabled = enabled && !lifting,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 .alpha(if (lifting) 0f else 1f).testTag("browser_download_page"),
             shape = RoundedCornerShape(14.dp)) {

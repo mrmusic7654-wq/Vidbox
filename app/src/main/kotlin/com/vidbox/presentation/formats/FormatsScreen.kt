@@ -140,8 +140,9 @@ private fun FormatCard(option: FormatSelection, selected: Boolean, onSelect: () 
                 Column(Modifier.padding(start = 2.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     val primary = option.primary
                     if (primary.hasVideo) Text(videoLabel(primary), style = MaterialTheme.typography.bodySmall)
+                    val audio = option.audio
                     when {
-                        option.audio != null -> Text(audioLabel(option.audio), style = MaterialTheme.typography.bodySmall)
+                        audio != null -> Text(audioLabel(audio), style = MaterialTheme.typography.bodySmall)
                         primary.hasAudio == false -> Text("No audio track in this stream", style = MaterialTheme.typography.bodySmall)
                         primary.hasAudio == true -> Text(if (primary.audioCodec != null) "Audio included · ${primary.audioCodec}" else "Audio included", style = MaterialTheme.typography.bodySmall)
                         else -> Text("Audio track", style = MaterialTheme.typography.bodySmall)

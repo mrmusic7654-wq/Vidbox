@@ -1,0 +1,1519 @@
+{
+ "fps": 30,
+ "w": 1920,
+ "h": 1080,
+ "total": 977.71,
+ "nframes": 29331,
+ "pad": 0.45,
+ "tail": 2.5,
+ "chunks": [
+  {
+   "idx": 0,
+   "audio": "part00.mp3",
+   "t0": 0.0,
+   "dur": 95.688,
+   "sents": [
+    {
+     "para": 0,
+     "text": "Right now, the wealthiest people in America are quietly pulling their money out of the banking system \u2014 and they are using your savings account as their exit ramp.",
+     "g0": 0.0,
+     "g1": 11.237
+    },
+    {
+     "para": 0,
+     "text": "Your bank says your money is safe.",
+     "g0": 11.237,
+     "g1": 13.581
+    },
+    {
+     "para": 0,
+     "text": "The government says the system is sound.",
+     "g0": 13.581,
+     "g1": 16.339
+    },
+    {
+     "para": 0,
+     "text": "The news says there's nothing to worry about.",
+     "g0": 16.339,
+     "g1": 19.441
+    },
+    {
+     "para": 0,
+     "text": "It's a script.",
+     "g0": 19.441,
+     "g1": 20.406
+    },
+    {
+     "para": 0,
+     "text": "It's the same script that played right before Silicon Valley Bank evaporated in 48 hours, before a 167-year-old Swiss giant was forced into the arms of its rival, and before Wall Street needed a bailout in 2008.",
+     "g0": 20.406,
+     "g1": 34.952
+    },
+    {
+     "para": 0,
+     "text": "The rich have already read the ending.",
+     "g0": 34.952,
+     "g1": 37.572
+    },
+    {
+     "para": 0,
+     "text": "And make no mistake: when a bank fails, it does not fail fairly.",
+     "g0": 37.572,
+     "g1": 41.984
+    },
+    {
+     "para": 0,
+     "text": "The people at the top get out first.",
+     "g0": 41.984,
+     "g1": 44.466
+    },
+    {
+     "para": 0,
+     "text": "Here is what \"always\" happens right before a bank collapses \u2014 and why most people never see it coming.",
+     "g0": 44.466,
+     "g1": 51.498
+    },
+    {
+     "para": 1,
+     "text": "Every bank in America runs on a promise: give us your money today, and we'll pay you back tomorrow.",
+     "g0": 51.498,
+     "g1": 58.323
+    },
+    {
+     "para": 1,
+     "text": "But here's what they don't put on the brochure.",
+     "g0": 58.323,
+     "g1": 61.563
+    },
+    {
+     "para": 1,
+     "text": "To pay you interest, banks don't keep your cash in a vault.",
+     "g0": 61.563,
+     "g1": 65.63
+    },
+    {
+     "para": 1,
+     "text": "They lend it out and they buy bonds \u2014 government bonds, mortgage bonds.",
+     "g0": 65.63,
+     "g1": 70.525
+    },
+    {
+     "para": 1,
+     "text": "Safe stuff.",
+     "g0": 70.525,
+     "g1": 71.283
+    },
+    {
+     "para": 1,
+     "text": "At least, that's the idea.",
+     "g0": 71.283,
+     "g1": 73.076
+    },
+    {
+     "para": 1,
+     "text": "When interest rates were near zero, banks loaded up on long-term bonds paying around one and a half percent.",
+     "g0": 73.076,
+     "g1": 80.521
+    },
+    {
+     "para": 1,
+     "text": "Then the Federal Reserve raised rates to fight inflation.",
+     "g0": 80.521,
+     "g1": 84.451
+    },
+    {
+     "para": 1,
+     "text": "And when rates go up, old bonds paying one and a half percent become about as popular as a rotting fish.",
+     "g0": 84.451,
+     "g1": 91.621
+    },
+    {
+     "para": 1,
+     "text": "Their price falls.",
+     "g0": 91.621,
+     "g1": 92.861
+    },
+    {
+     "para": 1,
+     "text": "Sometimes by 20 or 30 percent.",
+     "g0": 92.861,
+     "g1": 94.93
+    },
+    {
+     "para": 1,
+     "text": "The result?",
+     "g0": 94.93,
+     "g1": 95.688
+    }
+   ]
+  },
+  {
+   "idx": 1,
+   "audio": "part01.mp3",
+   "t0": 96.138,
+   "dur": 103.896,
+   "sents": [
+    {
+     "para": 1,
+     "text": "By the end of 2023, America's banks were sitting on roughly $700 billion in paper losses.",
+     "g0": 96.138,
+     "g1": 102.6
+    },
+    {
+     "para": 1,
+     "text": "Close to the entire annual GDP of Norway.",
+     "g0": 102.6,
+     "g1": 105.576
+    },
+    {
+     "para": 1,
+     "text": "Gone \u2014 on paper.",
+     "g0": 105.576,
+     "g1": 106.738
+    },
+    {
+     "para": 1,
+     "text": "It's not theft, and it's not a scandal.",
+     "g0": 106.738,
+     "g1": 109.57
+    },
+    {
+     "para": 1,
+     "text": "It's arithmetic.",
+     "g0": 109.57,
+     "g1": 110.731
+    },
+    {
+     "para": 1,
+     "text": "But it means the cushion protecting your deposits is thinner than anyone wants to admit.",
+     "g0": 110.731,
+     "g1": 117.12
+    },
+    {
+     "para": 1,
+     "text": "And a paper loss becomes a real loss the moment everyone wants their money back at the same time.",
+     "g0": 117.12,
+     "g1": 124.163
+    },
+    {
+     "para": 2,
+     "text": "So where did all that cheap money go?",
+     "g0": 124.163,
+     "g1": 126.849
+    },
+    {
+     "para": 2,
+     "text": "A lot of it went into office buildings.",
+     "g0": 126.849,
+     "g1": 129.681
+    },
+    {
+     "para": 2,
+     "text": "And the office building is not what it used to be.",
+     "g0": 129.681,
+     "g1": 133.311
+    },
+    {
+     "para": 2,
+     "text": "After the work-from-home revolution, national office vacancy rates blew past 20 percent \u2014 the highest in about 40 years.",
+     "g0": 133.311,
+     "g1": 142.024
+    },
+    {
+     "para": 2,
+     "text": "Entire floors sit empty.",
+     "g0": 142.024,
+     "g1": 143.766
+    },
+    {
+     "para": 2,
+     "text": "In some cities, office towers are selling for 30 to 50 percent below their peak prices.",
+     "g0": 143.766,
+     "g1": 150.083
+    },
+    {
+     "para": 2,
+     "text": "Here's the trap.",
+     "g0": 150.083,
+     "g1": 151.244
+    },
+    {
+     "para": 2,
+     "text": "Roughly $1.5 trillion in commercial real estate loans \u2014 that's close to the entire annual GDP of Spain \u2014 mature between 2024 and 2026.",
+     "g0": 151.244,
+     "g1": 160.973
+    },
+    {
+     "para": 2,
+     "text": "When those loans come due, the owner has to pay the bank back or refinance at today's much higher rates.",
+     "g0": 160.973,
+     "g1": 168.524
+    },
+    {
+     "para": 2,
+     "text": "Many can't do either.",
+     "g0": 168.524,
+     "g1": 170.049
+    },
+    {
+     "para": 2,
+     "text": "A study from Florida Atlantic University found that about 14 percent of all commercial real estate loans, and 44 percent of office loans, are already underwater \u2014 the building is worth less than the debt on it.",
+     "g0": 170.049,
+     "g1": 185.295
+    },
+    {
+     "para": 2,
+     "text": "Who owns those loans?",
+     "g0": 185.295,
+     "g1": 186.82
+    },
+    {
+     "para": 2,
+     "text": "Not Wall Street.",
+     "g0": 186.82,
+     "g1": 187.982
+    },
+    {
+     "para": 2,
+     "text": "Mostly small and community banks \u2014 the ones on your Main Street.",
+     "g0": 187.982,
+     "g1": 192.628
+    },
+    {
+     "para": 2,
+     "text": "Which brings us to the red line almost nobody is talking about.",
+     "g0": 192.628,
+     "g1": 197.202
+    },
+    {
+     "para": 3,
+     "text": "Regulators have a simple rule of thumb.",
+     "g0": 197.202,
+     "g1": 200.034
+    }
+   ]
+  },
+  {
+   "idx": 2,
+   "audio": "part02.mp3",
+   "t0": 200.484,
+   "dur": 93.864,
+   "sents": [
+    {
+     "para": 3,
+     "text": "If a bank's commercial real estate lending goes above 300 percent of its capital, that bank gets flagged for extra scrutiny.",
+     "g0": 200.484,
+     "g1": 208.635
+    },
+    {
+     "para": 3,
+     "text": "It's the danger zone.",
+     "g0": 208.635,
+     "g1": 210.015
+    },
+    {
+     "para": 3,
+     "text": "So how many banks are over the line?",
+     "g0": 210.015,
+     "g1": 212.381
+    },
+    {
+     "para": 3,
+     "text": "Florida Atlantic University's bank screener counted 1,788 of them.",
+     "g0": 212.381,
+     "g1": 216.72
+    },
+    {
+     "para": 3,
+     "text": "Nearly 2,000 banks.",
+     "g0": 216.72,
+     "g1": 217.968
+    },
+    {
+     "para": 3,
+     "text": "That's almost 2 out of every 5 banks in America.",
+     "g0": 217.968,
+     "g1": 221.124
+    },
+    {
+     "para": 3,
+     "text": "One of them \u2014 Flagstar, the rebranded New York Community Bancorp \u2014 had commercial real estate exposure above 500 percent of its equity.",
+     "g0": 221.124,
+     "g1": 229.997
+    },
+    {
+     "para": 3,
+     "text": "When a bank like that takes real losses, its capital doesn't just shrink.",
+     "g0": 229.997,
+     "g1": 234.796
+    },
+    {
+     "para": 3,
+     "text": "It can vanish.",
+     "g0": 234.796,
+     "g1": 235.716
+    },
+    {
+     "para": 3,
+     "text": "Now, to be clear: being over the line doesn't mean a bank fails tomorrow.",
+     "g0": 235.716,
+     "g1": 240.514
+    },
+    {
+     "para": 3,
+     "text": "Most will muddle through.",
+     "g0": 240.514,
+     "g1": 242.158
+    },
+    {
+     "para": 3,
+     "text": "But it means thousands of banks are one bad year away from serious trouble.",
+     "g0": 242.158,
+     "g1": 247.087
+    },
+    {
+     "para": 3,
+     "text": "And here's the part that should make you uncomfortable.",
+     "g0": 247.087,
+     "g1": 250.703
+    },
+    {
+     "para": 3,
+     "text": "Instead of facing that math, many banks are doing something else.",
+     "g0": 250.703,
+     "g1": 254.975
+    },
+    {
+     "para": 3,
+     "text": "Something with a nickname that should send a chill down your spine.",
+     "g0": 254.975,
+     "g1": 259.379
+    },
+    {
+     "para": 4,
+     "text": "It's called \"extend and pretend.\" When a dangerous loan comes due and the borrower can't pay, the bank doesn't take the loss.",
+     "g0": 259.379,
+     "g1": 267.595
+    },
+    {
+     "para": 4,
+     "text": "It extends the loan.",
+     "g0": 267.595,
+     "g1": 268.91
+    },
+    {
+     "para": 4,
+     "text": "Kicks the can down the road.",
+     "g0": 268.91,
+     "g1": 270.751
+    },
+    {
+     "para": 4,
+     "text": "And pretends everything is fine.",
+     "g0": 270.751,
+     "g1": 272.854
+    },
+    {
+     "para": 4,
+     "text": "At the peak, banks extended or modified more than 40 percent of maturing commercial real estate loans.",
+     "g0": 272.854,
+     "g1": 279.559
+    },
+    {
+     "para": 4,
+     "text": "On paper, no loss.",
+     "g0": 279.559,
+     "g1": 280.742
+    },
+    {
+     "para": 4,
+     "text": "In reality, the loss is just fermenting.",
+     "g0": 280.742,
+     "g1": 283.371
+    },
+    {
+     "para": 4,
+     "text": "Meanwhile, the warning lights are already blinking.",
+     "g0": 283.371,
+     "g1": 286.723
+    },
+    {
+     "para": 4,
+     "text": "Delinquent commercial real estate loans at the six biggest American banks tripled in a single year, to $9.3 billion.",
+     "g0": 286.723,
+     "g1": 294.348
+    }
+   ]
+  },
+  {
+   "idx": 3,
+   "audio": "part03.mp3",
+   "t0": 294.798,
+   "dur": 92.016,
+   "sents": [
+    {
+     "para": 4,
+     "text": "And here's the kicker: those banks set aside only about 90 cents of reserves for every dollar of late CRE debt.",
+     "g0": 294.798,
+     "g1": 302.649
+    },
+    {
+     "para": 4,
+     "text": "That's the lowest coverage in more than seven years.",
+     "g0": 302.649,
+     "g1": 306.327
+    },
+    {
+     "para": 4,
+     "text": "A zombie loan isn't dead money.",
+     "g0": 306.327,
+     "g1": 308.519
+    },
+    {
+     "para": 4,
+     "text": "It's a dead bank walking.",
+     "g0": 308.519,
+     "g1": 310.287
+    },
+    {
+     "para": 4,
+     "text": "Because every quarter a bank pretends, the real problem grows quietly underneath it \u2014 until one day it can't be hidden anymore.",
+     "g0": 310.287,
+     "g1": 319.27
+    },
+    {
+     "para": 4,
+     "text": "So with all of this brewing, what are the smartest investors on Earth doing?",
+     "g0": 319.27,
+     "g1": 324.645
+    },
+    {
+     "para": 4,
+     "text": "They're not waiting to find out.",
+     "g0": 324.645,
+     "g1": 326.908
+    },
+    {
+     "para": 5,
+     "text": "Warren Buffett spent decades telling anyone who would listen that banks were his favorite businesses.",
+     "g0": 326.908,
+     "g1": 334.052
+    },
+    {
+     "para": 5,
+     "text": "He owned Wells Fargo.",
+     "g0": 334.052,
+     "g1": 335.537
+    },
+    {
+     "para": 5,
+     "text": "He owned JPMorgan Chase.",
+     "g0": 335.537,
+     "g1": 337.234
+    },
+    {
+     "para": 5,
+     "text": "He bought Bank of America when everyone else was terrified.",
+     "g0": 337.234,
+     "g1": 341.407
+    },
+    {
+     "para": 5,
+     "text": "Then, quietly, he reversed.",
+     "g0": 341.407,
+     "g1": 343.317
+    },
+    {
+     "para": 5,
+     "text": "He sold all of his Wells Fargo.",
+     "g0": 343.317,
+     "g1": 345.509
+    },
+    {
+     "para": 5,
+     "text": "All of his JPMorgan.",
+     "g0": 345.509,
+     "g1": 346.924
+    },
+    {
+     "para": 5,
+     "text": "In 2024 alone, Berkshire Hathaway sold $143 billion worth of stock.",
+     "g0": 346.924,
+     "g1": 351.663
+    },
+    {
+     "para": 5,
+     "text": "In early 2025, Buffett dumped his remaining billion-dollar stake in Citigroup \u2014 every last share \u2014 and kept cutting Bank of America.",
+     "g0": 351.663,
+     "g1": 360.999
+    },
+    {
+     "para": 5,
+     "text": "And the money?",
+     "g0": 360.999,
+     "g1": 361.989
+    },
+    {
+     "para": 5,
+     "text": "It went into cash and short-term U.S.",
+     "g0": 361.989,
+     "g1": 364.606
+    },
+    {
+     "para": 5,
+     "text": "Treasury bills.",
+     "g0": 364.606,
+     "g1": 365.667
+    },
+    {
+     "para": 5,
+     "text": "By 2026, Berkshire was sitting on a record pile approaching $400 billion.",
+     "g0": 365.667,
+     "g1": 370.83
+    },
+    {
+     "para": 5,
+     "text": "Nearly triple its 2022 level.",
+     "g0": 370.83,
+     "g1": 372.881
+    },
+    {
+     "para": 5,
+     "text": "You don't turn your back on your favorite business and hoard a mountain of cash because you think prices are going up.",
+     "g0": 372.881,
+     "g1": 381.227
+    },
+    {
+     "para": 5,
+     "text": "As Buffett likes to say: be fearful when others are greedy.",
+     "g0": 381.227,
+     "g1": 385.399
+    },
+    {
+     "para": 5,
+     "text": "Wall Street noticed.",
+     "g0": 385.399,
+     "g1": 386.814
+    }
+   ]
+  },
+  {
+   "idx": 4,
+   "audio": "part04.mp3",
+   "t0": 387.264,
+   "dur": 93.744,
+   "sents": [
+    {
+     "para": 5,
+     "text": "The richest investors are rotating into gold \u2014 which has smashed record after record \u2014 into money market funds now holding more than $7 trillion, and into the one debtor that never runs out of other people's money: the U.S.",
+     "g0": 387.264,
+     "g1": 401.955
+    },
+    {
+     "para": 5,
+     "text": "government.",
+     "g0": 401.955,
+     "g1": 402.679
+    },
+    {
+     "para": 5,
+     "text": "But selling is the easy part.",
+     "g0": 402.679,
+     "g1": 404.59
+    },
+    {
+     "para": 5,
+     "text": "Getting out of a bank fast enough \u2014 that depends entirely on who you are.",
+     "g0": 404.59,
+     "g1": 409.399
+    },
+    {
+     "para": 6,
+     "text": "When a bank gets in trouble, the rich don't march into the branch and fill out a withdrawal slip.",
+     "g0": 409.399,
+     "g1": 415.789
+    },
+    {
+     "para": 6,
+     "text": "They do something you can't do.",
+     "g0": 415.789,
+     "g1": 417.831
+    },
+    {
+     "para": 6,
+     "text": "Roughly four out of every ten dollars sitting in American banks are uninsured deposits \u2014 money above the $250,000 insurance cap.",
+     "g0": 417.831,
+     "g1": 426.264
+    },
+    {
+     "para": 6,
+     "text": "Corporate accounts.",
+     "g0": 426.264,
+     "g1": 427.515
+    },
+    {
+     "para": 6,
+     "text": "Hedge fund cash.",
+     "g0": 427.515,
+     "g1": 428.569
+    },
+    {
+     "para": 6,
+     "text": "Trust funds.",
+     "g0": 428.569,
+     "g1": 429.36
+    },
+    {
+     "para": 6,
+     "text": "And those big depositors have tools ordinary people have never heard of.",
+     "g0": 429.36,
+     "g1": 434.103
+    },
+    {
+     "para": 6,
+     "text": "Sweep networks that scatter money across dozens of banks overnight.",
+     "g0": 434.103,
+     "g1": 438.517
+    },
+    {
+     "para": 6,
+     "text": "Same-day wires.",
+     "g0": 438.517,
+     "g1": 439.505
+    },
+    {
+     "para": 6,
+     "text": "Treasury bill auctions you can enter from a phone.",
+     "g0": 439.505,
+     "g1": 442.799
+    },
+    {
+     "para": 6,
+     "text": "In other words: the moment bad news breaks, insured you has to drive to a branch or open an app and wait.",
+     "g0": 442.799,
+     "g1": 449.716
+    },
+    {
+     "para": 6,
+     "text": "Uninsured them is already gone.",
+     "g0": 449.716,
+     "g1": 451.758
+    },
+    {
+     "para": 6,
+     "text": "Their money leaves at the speed of light.",
+     "g0": 451.758,
+     "g1": 454.459
+    },
+    {
+     "para": 6,
+     "text": "Yours leaves at the speed of a lunch break.",
+     "g0": 454.459,
+     "g1": 457.292
+    },
+    {
+     "para": 6,
+     "text": "That asymmetry has always existed.",
+     "g0": 457.292,
+     "g1": 459.532
+    },
+    {
+     "para": 6,
+     "text": "But technology just changed the scale of it \u2014 permanently.",
+     "g0": 459.532,
+     "g1": 463.353
+    },
+    {
+     "para": 6,
+     "text": "And to see what that means, you only have to rewind to one Thursday in March 2023.",
+     "g0": 463.353,
+     "g1": 468.755
+    },
+    {
+     "para": 7,
+     "text": "Silicon Valley Bank looked healthy on Wednesday.",
+     "g0": 468.755,
+     "g1": 471.917
+    },
+    {
+     "para": 7,
+     "text": "Its venture capital clients looked at its bond losses on Thursday morning \u2014 on their phones \u2014 and told their startups to pull their money.",
+     "g0": 471.917,
+     "g1": 481.008
+    }
+   ]
+  },
+  {
+   "idx": 5,
+   "audio": "part05.mp3",
+   "t0": 481.458,
+   "dur": 107.976,
+   "sents": [
+    {
+     "para": 7,
+     "text": "By the end of the day, depositors had demanded $42 billion back.",
+     "g0": 481.458,
+     "g1": 486.156
+    },
+    {
+     "para": 7,
+     "text": "That's about half a million dollars every second.",
+     "g0": 486.156,
+     "g1": 489.753
+    },
+    {
+     "para": 7,
+     "text": "All day.",
+     "g0": 489.753,
+     "g1": 490.34
+    },
+    {
+     "para": 7,
+     "text": "All night.",
+     "g0": 490.34,
+     "g1": 491.074
+    },
+    {
+     "para": 7,
+     "text": "By Friday morning, regulators had seized the bank.",
+     "g0": 491.074,
+     "g1": 494.744
+    },
+    {
+     "para": 7,
+     "text": "Over the weekend, another $100 billion in withdrawals lined up for Monday.",
+     "g0": 494.744,
+     "g1": 500.176
+    },
+    {
+     "para": 7,
+     "text": "About 94 percent of its deposits were uninsured.",
+     "g0": 500.176,
+     "g1": 503.699
+    },
+    {
+     "para": 7,
+     "text": "When the panic started, the money didn't queue \u2014 it detonated.",
+     "g0": 503.699,
+     "g1": 508.25
+    },
+    {
+     "para": 7,
+     "text": "Compare that to 2008, when Washington Mutual \u2014 the biggest bank failure in American history \u2014 lost $16.7 billion over roughly ten days of old-fashioned branch runs.",
+     "g0": 508.25,
+     "g1": 520.288
+    },
+    {
+     "para": 7,
+     "text": "SVB lost two and a half times more in one afternoon.",
+     "g0": 520.288,
+     "g1": 524.105
+    },
+    {
+     "para": 7,
+     "text": "A bank run that once took weeks now takes hours.",
+     "g0": 524.105,
+     "g1": 527.629
+    },
+    {
+     "para": 7,
+     "text": "That's the new physics of banking.",
+     "g0": 527.629,
+     "g1": 530.124
+    },
+    {
+     "para": 7,
+     "text": "Speed killed the bank.",
+     "g0": 530.124,
+     "g1": 531.739
+    },
+    {
+     "para": 7,
+     "text": "And it wasn't even the scariest failure of that month.",
+     "g0": 531.739,
+     "g1": 535.703
+    },
+    {
+     "para": 8,
+     "text": "The same week, across the Atlantic, Credit Suisse \u2014 a bank older than the telephone, the lightbulb, and the airplane \u2014 went from \"we're fine\" to nonexistent in about seven days.",
+     "g0": 535.703,
+     "g1": 548.695
+    },
+    {
+     "para": 8,
+     "text": "A 167-year-old institution with hundreds of billions in assets, a global client list, and centuries of credibility, dissolved in less time than it takes to renew a passport.",
+     "g0": 548.695,
+     "g1": 561.394
+    },
+    {
+     "para": 8,
+     "text": "Regulators forced a rescue: rival UBS bought it for a fraction of its value.",
+     "g0": 561.394,
+     "g1": 566.973
+    },
+    {
+     "para": 8,
+     "text": "And in the deal, $17 billion of the bank's bonds were wiped out \u2014 completely \u2014 while shareholders at least got something.",
+     "g0": 566.973,
+     "g1": 575.854
+    },
+    {
+     "para": 8,
+     "text": "Bondholders around the world read that fine print and felt something cold run down their spines.",
+     "g0": 575.854,
+     "g1": 582.901
+    },
+    {
+     "para": 8,
+     "text": "Because if a 167-year-old bank can die in a week, then no bank's age is a safety feature.",
+     "g0": 582.901,
+     "g1": 589.434
+    }
+   ]
+  },
+  {
+   "idx": 6,
+   "audio": "part06.mp3",
+   "t0": 589.884,
+   "dur": 108.696,
+   "sents": [
+    {
+     "para": 8,
+     "text": "Credibility, it turns out, is the only real vault.",
+     "g0": 589.884,
+     "g1": 593.653
+    },
+    {
+     "para": 8,
+     "text": "And once depositors start to wonder\u2026 the wondering itself is the run.",
+     "g0": 593.653,
+     "g1": 598.854
+    },
+    {
+     "para": 8,
+     "text": "So how do you know if your bank is next?",
+     "g0": 598.854,
+     "g1": 601.869
+    },
+    {
+     "para": 8,
+     "text": "Here's the uncomfortable answer: there's a list.",
+     "g0": 601.869,
+     "g1": 605.487
+    },
+    {
+     "para": 8,
+     "text": "And you're not allowed to see it.",
+     "g0": 605.487,
+     "g1": 607.975
+    },
+    {
+     "para": 9,
+     "text": "Every quarter, the FDIC updates something called the Problem Bank List \u2014 banks already considered at risk of failure.",
+     "g0": 607.975,
+     "g1": 616.794
+    },
+    {
+     "para": 9,
+     "text": "As of late 2025, that list held 60 banks.",
+     "g0": 616.794,
+     "g1": 619.885
+    },
+    {
+     "para": 9,
+     "text": "Here's the twist: the names are secret.",
+     "g0": 619.885,
+     "g1": 622.824
+    },
+    {
+     "para": 9,
+     "text": "By law.",
+     "g0": 622.824,
+     "g1": 623.352
+    },
+    {
+     "para": 9,
+     "text": "Because if the list went public, it would cause exactly what it exists to prevent \u2014 a panic.",
+     "g0": 623.352,
+     "g1": 630.287
+    },
+    {
+     "para": 9,
+     "text": "So the government knows which banks are wobbling, the banks know, and you don't.",
+     "g0": 630.287,
+     "g1": 636.317
+    },
+    {
+     "para": 9,
+     "text": "You bank on hope and a logo.",
+     "g0": 636.317,
+     "g1": 638.428
+    },
+    {
+     "para": 9,
+     "text": "For perspective: after the 2008 crisis, that same list peaked at nearly 900 banks, and roughly 400 failed between 2009 and 2011 alone.",
+     "g0": 638.428,
+     "g1": 648.529
+    },
+    {
+     "para": 9,
+     "text": "About 570 banks have failed since 2001.",
+     "g0": 648.529,
+     "g1": 651.468
+    },
+    {
+     "para": 9,
+     "text": "Every failure started as a line on that secret list.",
+     "g0": 651.468,
+     "g1": 655.388
+    },
+    {
+     "para": 9,
+     "text": "Every depositor found out after the doors were locked.",
+     "g0": 655.388,
+     "g1": 659.458
+    },
+    {
+     "para": 9,
+     "text": "Now \u2014 when a bank does fail, the FDIC steps in and covers you, up to $250,000.",
+     "g0": 659.458,
+     "g1": 665.338
+    },
+    {
+     "para": 9,
+     "text": "That's the promise.",
+     "g0": 665.338,
+     "g1": 666.77
+    },
+    {
+     "para": 9,
+     "text": "But have you ever asked what's behind the promise?",
+     "g0": 666.77,
+     "g1": 670.539
+    },
+    {
+     "para": 9,
+     "text": "Because the math is going to bother you.",
+     "g0": 670.539,
+     "g1": 673.554
+    },
+    {
+     "para": 10,
+     "text": "The Deposit Insurance Fund holds roughly $120 billion.",
+     "g0": 673.554,
+     "g1": 677.625
+    },
+    {
+     "para": 10,
+     "text": "The deposits it promises to protect total more than $10 trillion.",
+     "g0": 677.625,
+     "g1": 682.524
+    },
+    {
+     "para": 10,
+     "text": "That's about a penny of insurance for every dollar promised.",
+     "g0": 682.524,
+     "g1": 687.047
+    },
+    {
+     "para": 10,
+     "text": "Now, in fair weather, the FDIC never needs it all \u2014 bank failures are rare, and the fund manages.",
+     "g0": 687.047,
+     "g1": 694.359
+    },
+    {
+     "para": 10,
+     "text": "But the fund isn't a vault of cash waiting for doomsday.",
+     "g0": 694.359,
+     "g1": 698.58
+    }
+   ]
+  },
+  {
+   "idx": 7,
+   "audio": "part07.mp3",
+   "t0": 699.03,
+   "dur": 102.408,
+   "sents": [
+    {
+     "para": 10,
+     "text": "It's a claim on future assessments \u2014 money it would collect from surviving banks after a crisis.",
+     "g0": 699.03,
+     "g1": 705.773
+    },
+    {
+     "para": 10,
+     "text": "That's how 2008 worked.",
+     "g0": 705.773,
+     "g1": 707.388
+    },
+    {
+     "para": 10,
+     "text": "It's how 2023 worked: after Silicon Valley Bank, the FDIC had to bill the banking industry billions to refill the very fund that was supposed to prevent panic.",
+     "g0": 707.388,
+     "g1": 718.556
+    },
+    {
+     "para": 10,
+     "text": "And surveys keep finding that roughly half of Americans don't even know the insurance limit is $250,000 \u2014 some believe every dollar is protected no matter what.",
+     "g0": 718.556,
+     "g1": 729.795
+    },
+    {
+     "para": 10,
+     "text": "If you have more than the limit sitting in one bank, you are, right now, an uninsured depositor.",
+     "g0": 729.795,
+     "g1": 736.537
+    },
+    {
+     "para": 10,
+     "text": "Just like the venture capitalists who lost sleep in March 2023.",
+     "g0": 736.537,
+     "g1": 740.962
+    },
+    {
+     "para": 10,
+     "text": "Meanwhile, there's a quieter force at work.",
+     "g0": 740.962,
+     "g1": 743.983
+    },
+    {
+     "para": 10,
+     "text": "One that decides who's still standing when the dust settles.",
+     "g0": 743.983,
+     "g1": 748.197
+    },
+    {
+     "para": 11,
+     "text": "Here's the pattern nobody puts in the brochures.",
+     "g0": 748.197,
+     "g1": 751.569
+    },
+    {
+     "para": 11,
+     "text": "Every banking crisis makes the biggest banks bigger.",
+     "g0": 751.569,
+     "g1": 755.221
+    },
+    {
+     "para": 11,
+     "text": "In 2023, Silicon Valley Bank's remains went to a division of a giant.",
+     "g0": 755.221,
+     "g1": 760.067
+    },
+    {
+     "para": 11,
+     "text": "First Republic \u2014 hundreds of billions in assets \u2014 was auctioned at midnight and handed to JPMorgan Chase, the largest bank in America.",
+     "g0": 760.067,
+     "g1": 769.479
+    },
+    {
+     "para": 11,
+     "text": "Credit Suisse was folded into UBS.",
+     "g0": 769.479,
+     "g1": 771.868
+    },
+    {
+     "para": 11,
+     "text": "The weak fail, the strong eat.",
+     "g0": 771.868,
+     "g1": 773.975
+    },
+    {
+     "para": 11,
+     "text": "And who gets merged, sold off, and turned into a logo on someone else's app?",
+     "g0": 773.975,
+     "g1": 779.313
+    },
+    {
+     "para": 11,
+     "text": "The small banks.",
+     "g0": 779.313,
+     "g1": 780.437
+    },
+    {
+     "para": 11,
+     "text": "The community banks.",
+     "g0": 780.437,
+     "g1": 781.841
+    },
+    {
+     "para": 11,
+     "text": "The ones holding most of that commercial real estate debt.",
+     "g0": 781.841,
+     "g1": 785.915
+    },
+    {
+     "para": 11,
+     "text": "So the endgame of every panic is concentration: fewer banks, bigger banks, more systemically important banks.",
+     "g0": 785.915,
+     "g1": 793.571
+    },
+    {
+     "para": 11,
+     "text": "Your town's bank, with the lobby and the teller who knows your name, quietly becomes a customer-service chatbot.",
+     "g0": 793.571,
+     "g1": 801.438
+    }
+   ]
+  },
+  {
+   "idx": 8,
+   "audio": "part08.mp3",
+   "t0": 801.888,
+   "dur": 94.488,
+   "sents": [
+    {
+     "para": 11,
+     "text": "That matters for one simple reason \u2014 when the next crisis comes, \"too big to fail\" gets the midnight rescue, and everyone else gets a form letter.",
+     "g0": 801.888,
+     "g1": 811.461
+    },
+    {
+     "para": 11,
+     "text": "Which leads to the final trap.",
+     "g0": 811.461,
+     "g1": 813.429
+    },
+    {
+     "para": 11,
+     "text": "The one that's already been set for you.",
+     "g0": 813.429,
+     "g1": 816.051
+    },
+    {
+     "para": 11,
+     "text": "And you walked into it years ago.",
+     "g0": 816.051,
+     "g1": 818.215
+    },
+    {
+     "para": 12,
+     "text": "Ask yourself honestly: how fast could you actually move your money?",
+     "g0": 818.215,
+     "g1": 822.608
+    },
+    {
+     "para": 12,
+     "text": "Your salary is wired to your account.",
+     "g0": 822.608,
+     "g1": 825.035
+    },
+    {
+     "para": 12,
+     "text": "Your mortgage, your gym membership, your utilities, your kid's tuition \u2014 all on autopay.",
+     "g0": 825.035,
+     "g1": 830.805
+    },
+    {
+     "para": 12,
+     "text": "Moving banks means new account numbers, rerouting deposits, rebuilding your autopays, waiting for verification.",
+     "g0": 830.805,
+     "g1": 838.083
+    },
+    {
+     "para": 12,
+     "text": "For you, that's a project.",
+     "g0": 838.083,
+     "g1": 839.788
+    },
+    {
+     "para": 12,
+     "text": "A week of your life.",
+     "g0": 839.788,
+     "g1": 841.1
+    },
+    {
+     "para": 12,
+     "text": "For the wealthy, it's a keystroke.",
+     "g0": 841.1,
+     "g1": 843.329
+    },
+    {
+     "para": 12,
+     "text": "That asymmetry is the trap.",
+     "g0": 843.329,
+     "g1": 845.099
+    },
+    {
+     "para": 12,
+     "text": "In a crisis, the smart money is out in minutes \u2014 you read about it the next morning.",
+     "g0": 845.099,
+     "g1": 850.607
+    },
+    {
+     "para": 12,
+     "text": "By then, the withdrawals are frozen, the weekend is starting, and regulators are deciding your bank's fate without you in the room.",
+     "g0": 850.607,
+     "g1": 859.197
+    },
+    {
+     "para": 12,
+     "text": "History says the same three days repeat every time: the run, the freeze, the rescue.",
+     "g0": 859.197,
+     "g1": 864.705
+    },
+    {
+     "para": 12,
+     "text": "And the people who moved first lose nothing.",
+     "g0": 864.705,
+     "g1": 867.59
+    },
+    {
+     "para": 12,
+     "text": "The people who moved second lose sleep.",
+     "g0": 867.59,
+     "g1": 870.148
+    },
+    {
+     "para": 12,
+     "text": "The people who never move \u2014 because nobody told them there was anything to move \u2014 lose the most.",
+     "g0": 870.148,
+     "g1": 876.442
+    },
+    {
+     "para": 12,
+     "text": "So why doesn't anyone warn you?",
+     "g0": 876.442,
+     "g1": 878.475
+    },
+    {
+     "para": 12,
+     "text": "You already know the answer.",
+     "g0": 878.475,
+     "g1": 880.311
+    },
+    {
+     "para": 12,
+     "text": "You just haven't said it out loud yet.",
+     "g0": 880.311,
+     "g1": 882.803
+    },
+    {
+     "para": 13,
+     "text": "Follow the money.",
+     "g0": 882.803,
+     "g1": 883.917
+    },
+    {
+     "para": 13,
+     "text": "The financial system runs on your confidence.",
+     "g0": 883.917,
+     "g1": 886.868
+    },
+    {
+     "para": 13,
+     "text": "Banks profit when your money sits still.",
+     "g0": 886.868,
+     "g1": 889.491
+    },
+    {
+     "para": 13,
+     "text": "Fund managers profit when you stay invested.",
+     "g0": 889.491,
+     "g1": 892.376
+    },
+    {
+     "para": 13,
+     "text": "Media companies profit from the advertising of the first two.",
+     "g0": 892.376,
+     "g1": 896.376
+    }
+   ]
+  },
+  {
+   "idx": 9,
+   "audio": "part09.mp3",
+   "t0": 896.826,
+   "dur": 78.384,
+   "sents": [
+    {
+     "para": 13,
+     "text": "Nobody in that chain gets paid for telling you to move your savings to Treasury bills and unplug.",
+     "g0": 896.826,
+     "g1": 902.953
+    },
+    {
+     "para": 13,
+     "text": "So you'll hear \"the banking system remains strong\" \u2014 which, to be fair, is true.",
+     "g0": 902.953,
+     "g1": 908.006
+    },
+    {
+     "para": 13,
+     "text": "It will probably stay strong.",
+     "g0": 908.006,
+     "g1": 909.837
+    },
+    {
+     "para": 13,
+     "text": "Most banks will probably muddle through.",
+     "g0": 909.837,
+     "g1": 912.364
+    },
+    {
+     "para": 13,
+     "text": "None of this guarantees a crisis tomorrow.",
+     "g0": 912.364,
+     "g1": 915.017
+    },
+    {
+     "para": 13,
+     "text": "But here's what history actually shows.",
+     "g0": 915.017,
+     "g1": 917.48
+    },
+    {
+     "para": 13,
+     "text": "Bankers aren't villains twirling mustaches.",
+     "g0": 917.48,
+     "g1": 920.196
+    },
+    {
+     "para": 13,
+     "text": "Regulators aren't idiots.",
+     "g0": 920.196,
+     "g1": 921.775
+    },
+    {
+     "para": 13,
+     "text": "The system isn't run by a secret club \u2014 it doesn't need to be.",
+     "g0": 921.775,
+     "g1": 925.691
+    },
+    {
+     "para": 13,
+     "text": "It's a structural trap baked into the machine: the losses concentrate where the money is quietest, the exits fill up fastest where the money is loudest, and the bill always lands on the accounts that never moved.",
+     "g0": 925.691,
+     "g1": 939.081
+    },
+    {
+     "para": 13,
+     "text": "That's why this keeps happening.",
+     "g0": 939.081,
+     "g1": 941.103
+    },
+    {
+     "para": 13,
+     "text": "That's why the rich come out ahead \u2014 and everyone else is left reading the press release.",
+     "g0": 941.103,
+     "g1": 946.724
+    },
+    {
+     "para": 13,
+     "text": "The warning signs are public.",
+     "g0": 946.724,
+     "g1": 948.556
+    },
+    {
+     "para": 13,
+     "text": "The list is secret.",
+     "g0": 948.556,
+     "g1": 949.756
+    },
+    {
+     "para": 13,
+     "text": "The exits are already filling up.",
+     "g0": 949.756,
+     "g1": 951.84
+    },
+    {
+     "para": 13,
+     "text": "When the people who invented the rules start quietly breaking them \u2014 it might be time to ask your bank a question or two.",
+     "g0": 951.84,
+     "g1": 959.483
+    },
+    {
+     "para": 13,
+     "text": "Want to see how the same exit-ramp trick works in the stock market?",
+     "g0": 959.483,
+     "g1": 963.715
+    },
+    {
+     "para": 13,
+     "text": "Watch \"This is What 'Always' Happens Before a Market Crash.\" Or find out how Warren Buffett built an $85 billion empire \u2014 by knowing exactly when to walk away.",
+     "g0": 963.715,
+     "g1": 973.757
+    },
+    {
+     "para": 13,
+     "text": "Or click on this video.",
+     "g0": 973.757,
+     "g1": 975.21
+    }
+   ]
+  }
+ ],
+ "chapters": [
+  {
+   "id": "cold",
+   "title": "",
+   "n": 0
+  },
+  {
+   "id": "ch01",
+   "title": "THE $500 BILLION HOLE HIDING IN EVERY BANK",
+   "n": 1
+  },
+  {
+   "id": "ch02",
+   "title": "THE EMPTY OFFICE TIME BOMB",
+   "n": 2
+  },
+  {
+   "id": "ch03",
+   "title": "1,788 BANKS ARE ALREADY OVER THE LINE",
+   "n": 3
+  },
+  {
+   "id": "ch04",
+   "title": "\u201cEXTEND AND PRETEND\u201d: THE ZOMBIE LOANS",
+   "n": 4
+  },
+  {
+   "id": "ch05",
+   "title": "THE BUFFETT SIGNAL",
+   "n": 5
+  },
+  {
+   "id": "ch06",
+   "title": "THE RICH DON\u2019T STAND IN LINE",
+   "n": 6
+  },
+  {
+   "id": "ch07",
+   "title": "42 BILLION DOLLARS IN 24 HOURS",
+   "n": 7
+  },
+  {
+   "id": "ch08",
+   "title": "THE 167-YEAR-OLD BANK THAT DIED IN A WEEK",
+   "n": 8
+  },
+  {
+   "id": "ch09",
+   "title": "THE SECRET LIST OF DYING BANKS",
+   "n": 9
+  },
+  {
+   "id": "ch10",
+   "title": "YOUR $250,000 PROMISE",
+   "n": 10
+  },
+  {
+   "id": "ch11",
+   "title": "TOO BIG TO FAIL, TOO SMALL TO SAVE",
+   "n": 11
+  },
+  {
+   "id": "ch12",
+   "title": "HOW YOUR MONEY GETS TRAPPED",
+   "n": 12
+  },
+  {
+   "id": "ch13",
+   "title": "WHY NOBODY WARNS YOU",
+   "n": 13
+  }
+ ]
+}

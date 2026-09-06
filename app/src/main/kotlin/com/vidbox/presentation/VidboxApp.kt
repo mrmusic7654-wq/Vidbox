@@ -49,7 +49,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
     val recent by downloads.recent.collectAsStateWithLifecycle()
     val network by downloads.connectivity.collectAsStateWithLifecycle()
     // Do not re-query/decrypt a hidden history page on every active transfer update.
-    val historyState = if (destination == Destination.HISTORY) history.state.collectAsStateWithLifecycle().value else history.state.value
+    val historyState = if (destination == Destination.HISTORY) history.state.collectAsStateWithLifecycle().value else HistoryState(loading = false)
     val query by history.query.collectAsStateWithLifecycle()
     val preferences by settings.state.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }

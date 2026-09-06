@@ -26,6 +26,8 @@ data class DownloadCallbacks(
     val details: (DownloadRecord) -> Unit,
     val delete: (DownloadRecord, Boolean) -> Unit,
     val analyze: (DownloadRecord) -> Unit,
+    /** Plays a completed video in Vidbox's built-in player (external apps stay in the menu). */
+    val play: (DownloadRecord) -> Unit = {},
 )
 
 @Composable
@@ -100,8 +102,16 @@ fun DownloadCard(record: DownloadRecord, callbacks: DownloadCallbacks, compact: 
                 Box(Modifier.weight(1f)) { StatusPill(record) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (record.state == DownloadState.COMPLETED && !record.fileMissing) {
+                        val playableVideo = record.spec.kind == DownloadKind.MEDIA &&
+                            record.spec.selection.primary.hasVideo && record.outputUri != null
                         IconButton(onClick = { callbacks.share(record) }) { Icon(Icons.Rounded.Share, "Share ${record.fileName}", modifier = Modifier.size(20.dp)) }
-                        FilledTonalIconButton(onClick = { callbacks.open(record) }) { Icon(Icons.Rounded.PlayArrow, "Open ${record.fileName}") }
+                        if (playableVideo) {
+                            FilledTonalIconButton(onClick = { callbacks.play(record) }) {
+                                Icon(Icons.Rounded.PlayArrow, "Play ${record.fileName} in Vidbox")
+                            }
+                        } else {
+                            FilledTonalIconButton(onClick = { callbacks.open(record) }) { Icon(Icons.Rounded.OpenInNew, "Open ${record.fileName}") }
+                        }
                     } else if (!compact) {
                         if (record.canPause) IconButton(onClick = { callbacks.pause(record) }) { Icon(Icons.Rounded.Pause, "Pause download") }
                         else if (record.state == DownloadState.PAUSED) FilledTonalIconButton(onClick = { callbacks.resume(record) }) { Icon(Icons.Rounded.PlayArrow, "Resume download") }

@@ -15,6 +15,7 @@ import javax.inject.Inject
 sealed interface DownloadUiEvent {
     data class Message(val text: String) : DownloadUiEvent
     data class Open(val record: DownloadRecord, val share: Boolean) : DownloadUiEvent
+    data class Play(val record: DownloadRecord) : DownloadUiEvent
 }
 
 @HiltViewModel
@@ -44,6 +45,10 @@ class DownloadsViewModel @Inject constructor(
     }
     fun open(record: DownloadRecord, share: Boolean = false) = perform {
         if (history.verify(record)) eventChannel.send(DownloadUiEvent.Open(record, share))
+        else eventChannel.send(DownloadUiEvent.Message(Errors.of(ErrorCode.MISSING_FILE).message))
+    }
+    fun play(record: DownloadRecord) = perform {
+        if (history.verify(record)) eventChannel.send(DownloadUiEvent.Play(record))
         else eventChannel.send(DownloadUiEvent.Message(Errors.of(ErrorCode.MISSING_FILE).message))
     }
     fun verify(records: List<DownloadRecord>) {

@@ -17,10 +17,11 @@ class FormatPlanner @Inject constructor() {
         val formats = media.formats.filter { it.extension in FileNames.extensions }
         if (media.isDirect) {
             // A direct HTTP probe yields one original file. Never invent qualities or containers.
-            return formats.distinctBy { it.key }.sortedWith(
-                compareByDescending<FormatSelection> { it.primary.hasVideo }
-                    .thenByDescending { it.primary.sizeBytes ?: 0L }
-                    .thenBy { it.primary.extension })
+            // The source list is MediaFormats: wrap each in a FormatSelection before grouping by key.
+            return formats.distinctBy { it.id }.sortedWith(
+                compareByDescending<MediaFormat> { it.hasVideo }
+                    .thenByDescending { it.sizeBytes ?: 0L }
+                    .thenBy { it.extension }).map(::FormatSelection)
         }
         val audio = formats.filter { !it.hasVideo && it.hasAudio != false }
         val qualityGroups = formats.filter { it.hasVideo }

@@ -55,8 +55,8 @@ class DownloadQueue @Inject constructor(
                     for (record in snapshot.records) {
                         if (record.needsCleanup && record.id !in jobs && cleanupAttempted.add(record.id)) {
                             try {
-                                record.pendingUri?.takeIf { it != record.outputUri }?.let { storage.delete(it) }
                                 downloader.discard(record.id)
+                                record.pendingUri?.takeIf { it != record.outputUri }?.let { storage.delete(it) }
                                 repository.cleaned(record.id)
                             } catch (error: Exception) {
                                 if (error is CancellationException) throw error
@@ -148,8 +148,8 @@ class DownloadQueue @Inject constructor(
             }
             for (row in rows.filter { it.needsCleanup }) {
                 try {
-                    row.pendingUri?.takeIf { it != row.outputUri }?.let { storage.delete(it) }
                     downloader.discard(row.id)
+                    row.pendingUri?.takeIf { it != row.outputUri }?.let { storage.delete(it) }
                     repository.cleaned(row.id)
                 } catch (error: Exception) {
                     if (error is CancellationException) throw error

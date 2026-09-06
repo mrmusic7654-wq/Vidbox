@@ -71,6 +71,8 @@ class HttpRangeDownloader @Inject constructor(private val client: OkHttpClient, 
             val total: Long?
             if (response.code == 206) {
                 val range = parseRange(response.header("Content-Range")) ?: throw Errors.exception(ErrorCode.CORRUPT_PARTIAL)
+                // EOF of an unknown-length 206 proves only that range ended, not that the representation is complete.
+                if (range.total == null) throw Errors.exception(ErrorCode.CORRUPT_PARTIAL)
                 if (range.start != offset || (body.contentLength() >= 0 && body.contentLength() != range.end - range.start + 1))
                     throw Errors.exception(ErrorCode.CORRUPT_PARTIAL)
                 if (offset > 0 && !sameValidator(saved, response)) throw Errors.exception(ErrorCode.CORRUPT_PARTIAL)

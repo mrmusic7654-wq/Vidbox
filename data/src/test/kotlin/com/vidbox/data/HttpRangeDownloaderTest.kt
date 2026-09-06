@@ -62,6 +62,16 @@ class HttpRangeDownloaderTest {
         server.takeRequest()
         assertNull(server.takeRequest().getHeader("Range"))
     }
+    @Test fun unknownLengthPartialResponseCannotBeMistakenForACompleteFile() = runBlocking {
+        val file = target(); seedPartial(file, "0123")
+        server.enqueue(MockResponse().setResponseCode(206).setBody("456789")
+            .setHeader("Content-Range", "bytes 4-9/*").setHeader("ETag", "\"v1\""))
+        server.enqueue(MockResponse().setBody("0123456789").setHeader("ETag", "\"v1\""))
+        downloader.transfer(server.url("/media").toString(), file) {}
+        assertEquals("0123456789", file.readText())
+        server.takeRequest()
+        assertNull(server.takeRequest().getHeader("Range"))
+    }
     @Test fun handlesAlreadyComplete416OnlyWithMatchingValidator() = runBlocking {
         val file = target(); seedPartial(file, "0123456789")
         server.enqueue(MockResponse().setResponseCode(416).setHeader("Content-Range", "bytes */10").setHeader("ETag", "\"v1\""))

@@ -18,8 +18,11 @@ class FormatPlannerTest {
         assertTrue(mp4.requiresMerging)
         assertFalse(options.any { it.primary.id == "137" && it.container == "webm" })
     }
-    @Test fun doesNotSilentlyOfferAnUnmergeableVideo() {
-        assertTrue(FormatPlanner().options(info(listOf(video))).isEmpty())
+    @Test fun genuinelySilentMediaIsOfferedWithAnExplicitNoAudioFlag() {
+        val selected = FormatPlanner().options(info(listOf(video))).single()
+        assertFalse(selected.requiresMerging)
+        assertEquals(false, selected.primary.hasAudio)
+        assertEquals("137", selected.primary.id)
     }
     @Test fun missingDirectCodecMetadataIsNotInvented() {
         val direct = info(listOf(video.copy(id = "direct", hasAudio = null, videoCodec = null))).copy(isDirect = true)

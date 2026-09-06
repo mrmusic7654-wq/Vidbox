@@ -134,6 +134,7 @@ private fun FormatCard(option: FormatSelection, selected: Boolean, onSelect: () 
                         option.requiresMerging -> "Video-only stream + separate audio · merge required"
                         !primary.hasVideo -> "Audio only · no merging needed"
                         primary.hasAudio == true -> "Video + audio · no merging needed"
+                        primary.hasAudio == false -> "Video only · no audio track"
                         else -> "Original file · stream details not reported"
                     }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("Source format ${primary.id}${option.audio?.let { " + ${it.id}" }.orEmpty()}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

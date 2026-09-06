@@ -11,8 +11,12 @@ class FormatPlanner @Inject constructor() {
         return formats.flatMap { primary ->
             if (!primary.hasVideo || primary.hasAudio != false || media.isDirect) {
                 listOf(FormatSelection(primary))
+            } else if (audio.isEmpty()) {
+                // Some authorized sources genuinely contain no audio. Offer the original video,
+                // retaining hasAudio=false so the UI explicitly labels it rather than inventing a track.
+                listOf(FormatSelection(primary))
             } else {
-                // Never offer a silent video when its companion audio is unavailable.
+                // When source audio exists, pair it instead of unexpectedly producing a silent video.
                 listOf("mp4", "webm", "mkv").mapNotNull { container ->
                     if (!supportsVideo(container, primary.videoCodec)) return@mapNotNull null
                     val companion = audio.filter { supportsAudio(container, it.audioCodec, it.extension) }

@@ -48,7 +48,9 @@ class BrowserViewModelTest {
             override val settings = settingsStore
             override suspend fun update(transform: (AppSettings) -> AppSettings) { settingsStore.value = transform(settingsStore.value) }
         }
-        val actions = DownloadActions(repository, settings, DownloadScheduler { }, FormatPlanner())
+        val actions = DownloadActions(repository, settings, object : DownloadScheduler {
+            override fun start() { /* Queue stays idle: rows remain QUEUED for assertions. */ }
+        }, FormatPlanner())
         viewModel = BrowserViewModel(actions, settings)
     }
 

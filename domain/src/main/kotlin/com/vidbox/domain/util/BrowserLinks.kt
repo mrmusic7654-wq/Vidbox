@@ -1,5 +1,6 @@
 package com.vidbox.domain.util
 
+import java.net.IDN
 import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -35,7 +36,18 @@ object BrowserLinks {
             else -> "https://$value"
         }
         val uri = runCatching { URI(withScheme) }.getOrNull() ?: return SEARCH + URLEncoder.encode(value, "UTF-8")
-        if (uri.host.isNullOrBlank()) return SEARCH + URLEncoder.encode(value, "UTF-8")
+        val host = uri.host
+        if (host.isNullOrBlank()) return SEARCH + URLEncoder.encode(value, "UTF-8")
+        // java.net.URI percent-escapes instead of punyencoding non-ASCII hosts, which no
+        // server resolves; international names are converted to their IDN ASCII form.
+        if (host.any { it.code > 127 }) {
+            val ascii = runCatching { IDN.toASCII(host) }.getOrNull() ?: return SEARCH + URLEncoder.encode(value, "UTF-8")
+            return "https://" + ascii +
+                (if (uri.port in 1..65535) ":${uri.port}" else "") +
+                (uri.rawPath ?: "") +
+                (uri.rawQuery?.let { "?$it" } ?: "") +
+                (uri.rawFragment?.let { "#$it" } ?: "")
+        }
         return uri.toASCIIString()
     }
 

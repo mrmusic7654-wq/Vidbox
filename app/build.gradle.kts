@@ -93,6 +93,9 @@ dependencies {
     androidTestImplementation(libs.hilt.testing)
     androidTestImplementation(libs.coroutines.test)
     androidTestImplementation(libs.okhttp.mock)
+    androidTestImplementation(libs.room.runtime)
+    androidTestImplementation(libs.room.ktx)
+    androidTestImplementation(libs.serialization.json)
     kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.test.manifest)
 }

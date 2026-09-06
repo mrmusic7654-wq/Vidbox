@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -12,16 +14,25 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vidbox.domain.model.DownloadKind
 import com.vidbox.domain.model.DownloadRecord
+import com.vidbox.domain.model.DownloadState
 import com.vidbox.presentation.browser.*
 import com.vidbox.presentation.components.*
 import com.vidbox.presentation.downloads.*
@@ -31,6 +42,7 @@ import com.vidbox.presentation.home.*
 import com.vidbox.presentation.settings.*
 import com.vidbox.util.FileIntents
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 private enum class Destination(val label: String, val icon: ImageVector, val tag: String) {
     HOME("Home", Icons.Rounded.Home, "nav_home"),
@@ -39,6 +51,9 @@ private enum class Destination(val label: String, val icon: ImageVector, val tag
     HISTORY("Library", Icons.Rounded.VideoLibrary, "nav_history"),
     SETTINGS("Settings", Icons.Rounded.Tune, "nav_settings"),
 }
+
+private val DragBadge = 58.dp
+private val DragBadgeIcon = 30.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +78,9 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
     var details by remember { mutableStateOf<DownloadRecord?>(null) }
     var deletion by remember { mutableStateOf<Pair<DownloadRecord, Boolean>?>(null) }
     var cancellation by remember { mutableStateOf<DownloadRecord?>(null) }
+    // Geometry for the drag-and-drop download shortcut (see the Browser screen).
+    var downloadsSlot by remember { mutableStateOf<Rect?>(null) }
+    var dragPosition by remember { mutableStateOf<Offset?>(null) }
 
     LaunchedEffect(openDownloads) {
         if (openDownloads) { destination = Destination.DOWNLOADS; home.dismissFormats(); onNavigationConsumed() }
@@ -77,6 +95,8 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                 is DownloadUiEvent.Open -> try { FileIntents.open(context, event.record, event.share) }
                     catch (_: ActivityNotFoundException) { snackbars.showSnackbar("No installed app can open this file type.") }
                     catch (_: SecurityException) { snackbars.showSnackbar("The saved file is no longer accessible. Check your download folder.") }
+                is DownloadUiEvent.Play -> try { FileIntents.internalPlayer(context, event.record) }
+                    catch (_: Exception) { snackbars.showSnackbar("The saved file is no longer accessible. Check your download folder.") }
             }
         }
     }
@@ -90,11 +110,19 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
     }
     BackHandler(enabled = destination != Destination.HOME && homeState.media == null) { destination = Destination.HOME }
 
+    val startDownloadFromPage: (String?) -> Unit = { url ->
+        if (url != null) {
+            home.paste(url); home.dismissFormats(); home.analyze()
+            destination = Destination.HOME
+        } else scope.launch { snackbars.showSnackbar("Open a page first, then download from it") }
+    }
+
     val callbacks = DownloadCallbacks(
         pause = { downloads.pause(it.id) }, resume = { downloads.resume(it.id) }, cancel = { cancellation = it },
         open = { downloads.open(it) }, share = { downloads.open(it, true) }, details = { details = it },
         delete = { record, deleteFile -> deletion = record to deleteFile },
         analyze = { home.paste(it.spec.url); home.dismissFormats(); destination = Destination.HOME; home.analyze() },
+        play = { downloads.play(it) },
     )
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         Box(Modifier.widthIn(max = 900.dp).fillMaxSize()) {
@@ -115,11 +143,17 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                     NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                         Destination.entries.forEach { item ->
                             NavigationBarItem(selected = destination == item, onClick = { destination = item; focus.clearFocus() },
-                                modifier = Modifier.testTag(item.tag), label = { Text(item.label) }, icon = {
-                                    BadgedBox(badge = { if (item == Destination.DOWNLOADS && active.isNotEmpty()) Badge { Text(active.size.toString()) } }) {
-                                        Icon(item.icon, null)
+                                modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                        if (item == Destination.DOWNLOADS) {
+                                            downloadsSlot = Rect(coordinates.positionInWindow(), coordinates.size.toSize())
+                                        }
                                     }
-                                })
+                                    .testTag(item.tag), label = { Text(item.label) }, icon = {
+                                        BadgedBox(badge = { if (item == Destination.DOWNLOADS && active.isNotEmpty()) Badge { Text(active.size.toString()) } }) {
+                                            Icon(item.icon, null)
+                                        }
+                                    })
                         }
                     }
                 }, snackbarHost = { SnackbarHost(snackbars) }) { insets ->
@@ -136,17 +170,21 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                             onAnalyze = { focus.clearFocus(); home.analyze() }, onCancel = home::cancelAnalysis,
                             onBrowse = { destination = Destination.BROWSER },
                             onDownloads = { destination = Destination.DOWNLOADS }, onHistory = { destination = Destination.HISTORY }, callbacks = callbacks)
-                        Destination.BROWSER -> BrowserScreen(browser, browserState, notificationsAllowed, onRequestNotifications,
-                            onDownloadPage = { url ->
-                                if (url != null) {
-                                    home.paste(url); home.dismissFormats(); home.analyze()
-                                    destination = Destination.HOME
-                                } else scope.launch { snackbars.showSnackbar("Open a page first, then download from it") }
-                            },
+                        Destination.BROWSER -> BrowserScreen(browser, browserState, notificationsAllowed,
+                            onRequestNotifications, onDownloadPage = startDownloadFromPage,
                             onOpenExternal = { url ->
                                 try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                                 catch (_: ActivityNotFoundException) { scope.launch { snackbars.showSnackbar("No browser is installed") } }
-                            })
+                            },
+                            onDownloadDragStart = { dragPosition = it },
+                            onDownloadDragMove = { dragPosition = it },
+                            onDownloadDragEnd = { position ->
+                                dragPosition = null
+                                // Dropping the lifted download button on the Downloads tab starts the
+                                // page download flow, exactly like pressing the button itself.
+                                if (downloadsSlot?.contains(position) == true) startDownloadFromPage(browserState.currentUrl)
+                            },
+                            onDownloadDragCancel = { dragPosition = null })
                         Destination.DOWNLOADS -> DownloadsScreen(active, notificationsAllowed, preferences.maxConcurrent, onRequestNotifications,
                             onAddLink = { destination = Destination.HOME }, callbacks = callbacks)
                         Destination.HISTORY -> HistoryScreen(historyState, query, history::search, history::filter, history::sort, history::more,
@@ -160,10 +198,37 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                 }
             }
         }
+        // Floating copy of the download action while it is being dragged onto a destination.
+        dragPosition?.let { position ->
+            val downloadsHit = downloadsSlot?.contains(position) == true
+            if (downloadsHit) {
+                downloadsSlot?.let { slot ->
+                    Box(Modifier.offset { IntOffset(slot.left.roundToInt(), slot.top.roundToInt()) }
+                        .size(with(LocalDensity.current) { slot.width.toDp() }, with(LocalDensity.current) { slot.height.toDp() }),
+                        contentAlignment = Alignment.Center) {
+                        Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f),
+                            modifier = Modifier.fillMaxSize().testTag("drag_download_target")) {}
+                    }
+                }
+            }
+            val badgeHalf = with(LocalDensity.current) { DragBadge.toPx() / 2f }
+            Box(Modifier.offset { IntOffset((position.x - badgeHalf).roundToInt(), (position.y - badgeHalf).roundToInt()) },
+                contentAlignment = Alignment.Center) {
+                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary, shadowElevation = 10.dp,
+                    modifier = Modifier.size(DragBadge).testTag("drag_download_icon")) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(DragBadgeIcon))
+                    }
+                }
+            }
+        }
     }
     details?.let { original ->
         val record = (active + historyState.records + recent).find { it.id == original.id } ?: original
-        DownloadDetails(record) { details = null }
+        DownloadDetails(record, onDismiss = { details = null },
+            onPlay = if (record.state == DownloadState.COMPLETED && !record.fileMissing &&
+                record.spec.kind == DownloadKind.MEDIA && record.spec.selection.primary.hasVideo)
+                ({ downloads.play(record) }) else null)
     }
     deletion?.let { (record, deleteFile) ->
         AlertDialog(onDismissRequest = { deletion = null }, title = { Text(if (deleteFile) "Delete this file?" else "Remove history entry?") },

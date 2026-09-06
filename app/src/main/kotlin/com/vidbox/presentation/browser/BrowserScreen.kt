@@ -1,10 +1,13 @@
 package com.vidbox.presentation.browser
 
+import android.graphics.Bitmap
+import android.view.HapticFeedbackConstants
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -17,7 +20,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,7 +39,9 @@ import com.vidbox.domain.util.FileNames
 
 @Composable
 fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsAllowed: Boolean,
-    onRequestNotifications: () -> Unit, onDownloadPage: (String?) -> Unit, onOpenExternal: (String) -> Unit) {
+    onRequestNotifications: () -> Unit, onDownloadPage: (String?) -> Unit, onOpenExternal: (String) -> Unit,
+    onDownloadDragStart: (Offset) -> Unit, onDownloadDragMove: (Offset) -> Unit,
+    onDownloadDragEnd: (Offset) -> Unit, onDownloadDragCancel: () -> Unit) {
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val webView = remember {
@@ -55,7 +67,7 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
                     }
                     return false
                 }
-                override fun onPageStarted(view: WebView, url: String?) { browser.pageStarted(url) }
+                override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) { browser.pageStarted(url) }
                 override fun onPageFinished(view: WebView, url: String?) {
                     browser.pageFinished(url, view.canGoBack(), view.canGoForward())
                 }
@@ -108,12 +120,13 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
                     horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     FilledTonalIconButton(onClick = { webView.reload() }, enabled = state.currentUrl != null,
                         modifier = Modifier.testTag("browser_reload")) { Icon(Icons.Rounded.Refresh, "Reload page") }
-                    Button(onClick = { onDownloadPage(state.currentUrl) }, enabled = state.currentUrl != null,
-                        modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("browser_download_page"),
-                        shape = RoundedCornerShape(14.dp)) {
-                        Icon(Icons.Rounded.Download, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
-                        Text("Download from this page")
-                    }
+                    BrowserDownloadAction(
+                        enabled = state.currentUrl != null,
+                        onClick = { onDownloadPage(state.currentUrl) },
+                        onLiftStart = { onDownloadDragStart(it) },
+                        onLiftMove = { onDownloadDragMove(it) },
+                        onLiftEnd = { onDownloadDragEnd(it) },
+                        onLiftCancel = { onDownloadDragCancel() })
                     FilledTonalIconButton(onClick = { state.currentUrl?.let(onOpenExternal) }, enabled = state.currentUrl != null,
                         modifier = Modifier.testTag("browser_open_external")) { Icon(Icons.Rounded.OpenInNew, "Open in your browser") }
                 }
@@ -158,6 +171,66 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
                 }, modifier = Modifier.testTag("browser_confirm_download")) { Text("Download") }
             },
             dismissButton = { TextButton(onClick = browser::dismissDownload) { Text("Cancel") } })
+    }
+}
+
+/**
+ * The "Download from this page" action is also a drag handle: hold it for a moment and the
+ * action detaches and follows your finger anywhere on screen (the drop target is rendered by
+ * the app shell, which receives window-space positions). A plain tap keeps its normal behavior.
+ */
+@Composable
+private fun RowScope.BrowserDownloadAction(enabled: Boolean, onClick: () -> Unit,
+    onLiftStart: (Offset) -> Unit, onLiftMove: (Offset) -> Unit,
+    onLiftEnd: (Offset) -> Unit, onLiftCancel: () -> Unit) {
+    val view = LocalView.current
+    var lifting by remember { mutableStateOf(false) }
+    var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val latestStart by rememberUpdatedState(onLiftStart)
+    val latestMove by rememberUpdatedState(onLiftMove)
+    val latestEnd by rememberUpdatedState(onLiftEnd)
+    val latestCancel by rememberUpdatedState(onLiftCancel)
+    val latestEnabled by rememberUpdatedState(enabled)
+    val latestClick by rememberUpdatedState(onClick)
+
+    fun windowOf(local: Offset): Offset = (coordinates?.positionInWindow() ?: Offset.Zero) + local
+
+    Box(Modifier.weight(1f).heightIn(min = 48.dp)
+        .onGloballyPositioned { coordinates = it }
+        .then(if (enabled) Modifier.pointerInput(Unit) {
+            var lastLocal = Offset.Zero
+            detectDragGesturesAfterLongPress(
+                onDragStart = { start ->
+                    if (latestEnabled) {
+                        lifting = true
+                        lastLocal = start
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        latestStart(windowOf(start))
+                    }
+                },
+                onDrag = { change, _ ->
+                    if (latestEnabled) {
+                        change.consume()
+                        lastLocal = change.position
+                        latestMove(windowOf(change.position))
+                    }
+                },
+                onDragEnd = {
+                    lifting = false
+                    if (latestEnabled) latestEnd(windowOf(lastLocal))
+                },
+                onDragCancel = {
+                    lifting = false
+                    latestCancel()
+                })
+        } else Modifier)) {
+        Button(onClick = { latestClick() }, enabled = enabled && !lifting,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                .alpha(if (lifting) 0f else 1f).testTag("browser_download_page"),
+            shape = RoundedCornerShape(14.dp)) {
+            Icon(Icons.Rounded.Download, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
+            Text("Download from this page")
+        }
     }
 }
 

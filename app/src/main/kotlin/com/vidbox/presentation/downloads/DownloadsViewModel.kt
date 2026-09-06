@@ -55,7 +55,6 @@ class DownloadsViewModel @Inject constructor(
     fun onForeground() = perform {
         if (repository.active().any { it.state == DownloadState.QUEUED || it.state.isRunning ||
                 it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI) }) actions.wake()
-        verify(recent.value)
     }
     private fun perform(block: suspend () -> Unit) {
         viewModelScope.launch {

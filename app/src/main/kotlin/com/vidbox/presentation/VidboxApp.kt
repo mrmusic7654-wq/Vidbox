@@ -78,8 +78,9 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
         }
     }
     LaunchedEffect(settings) { settings.messages.collect { snackbars.showSnackbar(it) } }
-    LaunchedEffect(destination, historyState.records.map { it.id }) {
-        if (destination == Destination.HISTORY) downloads.verify(historyState.records)
+    val visibleFiles = if (destination == Destination.HISTORY) historyState.records else recent
+    LaunchedEffect(destination, visibleFiles.map { it.id }) {
+        downloads.verify(visibleFiles)
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         if (destination == Destination.HISTORY) downloads.verify(historyState.records) else downloads.verify(recent)

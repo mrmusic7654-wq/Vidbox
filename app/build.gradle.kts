@@ -44,6 +44,18 @@ android {
             signingConfig = signingConfigs.findByName("production")
         }
     }
+    // Per-ABI release APKs: each side-loadable artifact carries exactly one native runtime copy
+    // (~58 MB instead of the 108 MB universal APK; distribute the split for your device). The
+    // universal output stays enabled because the emulator tests and libraries' connected runs
+    // install it, and the AAB keeps every ABI with Play picking per device anyway.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = true
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

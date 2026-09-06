@@ -44,13 +44,14 @@ android {
             signingConfig = signingConfigs.findByName("production")
         }
     }
-    // Per-ABI release APKs: each side-loadable artifact carries exactly one native runtime copy
-    // (~58 MB instead of the 108 MB universal APK; distribute the split for your device). The
-    // universal output stays enabled because the emulator tests and libraries' connected runs
-    // install it, and the AAB keeps every ABI with Play picking per device anyway.
+    // Per-ABI release APKs (~58 MB each instead of one 108 MB universal): enable with
+    //   ./gradlew -Pvidbox.apkSplits=true assembleRelease
+    // The flag is opt-in because AGP cannot bundle an AAB while multiple APK outputs exist
+    // (b/402800800: resource shrinking + splits make the pre-bundle artifacts ambiguous), and
+    // because connected tests and the emulator smoke install expect a single universal debug APK.
     splits {
         abi {
-            isEnable = true
+            isEnable = providers.gradleProperty("vidbox.apkSplits").isPresent
             reset()
             include("arm64-v8a", "x86_64")
             isUniversalApk = true

@@ -27,9 +27,14 @@ jobs:
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
       - name: Unit and integration tests
         run: ./scripts/verify-gradle.sh :domain:test testDebugUnitTest
-      - name: Debug, release, and lint
+      - name: Debug and lint
         if: ${{ !cancelled() }}
-        run: ./scripts/verify-gradle.sh assembleDebug assembleRelease bundleRelease lintDebug
+        run: ./scripts/verify-gradle.sh assembleDebug lintDebug
+      - name: Release APKs (per-ABI splits) and AAB
+        if: ${{ !cancelled() }}
+        run: |
+          ./scripts/verify-gradle.sh -Pvidbox.apkSplits=true assembleRelease
+          ./scripts/verify-gradle.sh bundleRelease
       - name: Verify packaged native runtime and 16 KB ELF alignment
         run: python3 scripts/check-native-packaging.py app/build/outputs/apk/debug/*.apk app/build/outputs/apk/release/*.apk
       - name: Report packaged sizes

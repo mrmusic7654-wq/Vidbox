@@ -126,7 +126,7 @@ class CompositeVideoExtractor @Inject constructor(
         }
         Regex("<video\\b[^>]*\\bsrc\\s*=\\s*[\"']([^\"']+)[\"']", RegexOption.IGNORE_CASE)
             .findAll(html).forEach { links.add(htmlUnescape(it.groupValues[1])) }
-        Regex("<source\\b[^>]*>", RegexOption.IGNORE_CASE).forEach { match ->
+        Regex("<source\\b[^>]*>", RegexOption.IGNORE_CASE).findAll(html).forEach { match ->
             val tag = match.value
             // HLS manifests are handled by the extractor engine, not as direct downloads.
             if (Regex("type\\s*=\\s*[\"'][^\"']*(?:mpegurl|x-mpegurl|hls)[^\"']*[\"']", RegexOption.IGNORE_CASE)

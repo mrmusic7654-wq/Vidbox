@@ -1,9 +1,13 @@
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+}
+val engineLock = Properties().apply {
+    rootProject.file("engine.lock").inputStream().use { load(it) }
 }
 android {
     namespace = "com.vidbox"
@@ -14,6 +18,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
+        buildConfigField("String", "MEDIA_ENGINE_VERSION", "\"${engineLock.getProperty("version")}\"")
         testInstrumentationRunner = "com.vidbox.VidboxTestRunner"
         ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a", "x86_64") }
     }
@@ -87,6 +92,7 @@ dependencies {
     androidTestImplementation(libs.espresso)
     androidTestImplementation(libs.hilt.testing)
     androidTestImplementation(libs.coroutines.test)
+    androidTestImplementation(libs.okhttp.mock)
     kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.test.manifest)
 }

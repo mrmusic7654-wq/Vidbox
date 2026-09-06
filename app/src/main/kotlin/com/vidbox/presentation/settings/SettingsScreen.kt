@@ -97,7 +97,7 @@ fun SettingsScreen(settings: AppSettings, onUpdate: ((AppSettings) -> AppSetting
         text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Version ${BuildConfig.VERSION_NAME}\nAndroid 10 and newer")
             Text("Media is extracted and saved on your device. No Vidbox account, analytics, or download relay server.")
-            Text("Powered by yt-dlp Android 0.18.1 and FFmpeg. Engine updates ship with app releases. Not every site or protected video is supported.")
+            Text("Powered by yt-dlp ${BuildConfig.MEDIA_ENGINE_VERSION}, Android runtime 0.18.1, and FFmpeg. Engine updates ship with app releases. Not every site or protected video is supported.")
             Text("GPL-3.0-or-later. See the source repository for licenses, privacy details, supported paths, and build instructions.")
         } }, confirmButton = { TextButton(onClick = onAboutLink) { Text("Source & licenses") } },
         dismissButton = { TextButton(onClick = { aboutDialog = false }) { Text("Close") } })

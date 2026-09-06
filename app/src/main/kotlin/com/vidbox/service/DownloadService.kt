@@ -83,6 +83,10 @@ class DownloadService : Service() {
                 queue.pauseForSystemLimit()
                 notifications.recovery()
             } finally {
+                withContext(NonCancellable) {
+                    // Flush state once even for jobs that finish before the one-second notification sampler.
+                    runCatching { notifications.update(repository.active()) }
+                }
                 manageWakeLock(false)
                 notifications.clearActive()
                 stopForeground(STOP_FOREGROUND_REMOVE)

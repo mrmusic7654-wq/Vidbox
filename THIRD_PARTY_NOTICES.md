@@ -5,7 +5,7 @@ Vidbox's original source code is GPL-3.0-or-later (see LICENSE). This is intenti
 | Component | Pinned source / license information |
 | --- | --- |
 | youtubedl-android library/common/ffmpeg 0.18.1 | [Source at tag 0.18.1](https://github.com/yausername/youtubedl-android/tree/0.18.1), GPL-3.0; includes Android packaging/build scripts |
-| Bundled yt-dlp zipapp | [yt-dlp](https://github.com/yt-dlp/yt-dlp), [Android lazy build](https://github.com/xibr/ytdlp-lazy); consult the bundled release's notices and dependency licenses, not just the top-level project license |
+| Bundled yt-dlp zipapp 2026.08.19 | [Pinned release and corresponding source](https://github.com/yt-dlp/yt-dlp/tree/2026.08.19), immutable artifact URL/SHA-256 in `engine.lock`; consult the bundled release's notices and dependency licenses, not just the top-level project license |
 | Bundled FFmpeg and codec dependencies | [Android FFmpeg build instructions](https://github.com/yausername/youtubedl-android/blob/0.18.1/BUILD_FFMPEG.md), [FFmpeg license](https://ffmpeg.org/legal.html); effective license depends on the actual build configuration and linked codecs |
 | Bundled Python, OpenSSL and runtime libraries | [Android Python build instructions](https://github.com/yausername/youtubedl-android/blob/0.18.1/BUILD_PYTHON.md), [Python license](https://docs.python.org/3/license.html); preserve embedded notices |
 | QuickJS | [QuickJS source and license](https://bellard.org/quickjs/), MIT; Android package supplied by the runtime |

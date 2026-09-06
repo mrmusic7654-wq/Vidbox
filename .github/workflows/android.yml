@@ -21,11 +21,14 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
       - name: Install SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Unit and integration tests
         run: ./scripts/verify-gradle.sh :domain:test testDebugUnitTest
       - name: Debug, release, and lint
+        if: ${{ !cancelled() }}
         run: ./scripts/verify-gradle.sh assembleDebug assembleRelease bundleRelease lintDebug
       - name: Verify packaged native runtime and 16 KB ELF alignment
         run: python3 scripts/check-native-packaging.py
@@ -55,6 +58,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -66,10 +71,12 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          script: ./scripts/verify-gradle.sh :app:connectedDebugAndroidTest :data:connectedDebugAndroidTest
+          script: ./scripts/device-verification.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: device-test-reports
-          path: '**/build/reports/androidTests/'
+          path: |
+            **/build/reports/androidTests/
+            app/build/reports/device-smoke/
           retention-days: 14

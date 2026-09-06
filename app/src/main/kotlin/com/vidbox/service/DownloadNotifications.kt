@@ -26,6 +26,7 @@ import javax.inject.Singleton
 class DownloadNotifications @Inject constructor(@ApplicationContext private val context: Context) {
     private val manager = NotificationManagerCompat.from(context)
     private var activeIds = emptySet<Int>()
+    private var pausedIds = emptySet<Int>()
 
     fun initial(): Notification = base(ACTIVE_CHANNEL).setContentTitle("Vidbox downloads")
         .setContentText("Preparing your download queue…").setOngoing(true).setOnlyAlertOnce(true)
@@ -33,19 +34,25 @@ class DownloadNotifications @Inject constructor(@ApplicationContext private val 
 
     @SuppressLint("MissingPermission") // Foreground notification is mandatory even if notification visibility was denied.
     fun update(records: List<DownloadRecord>) {
-        val visible = records.filter { !it.state.isTerminal && (it.state != DownloadState.PAUSED || it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI)) }
+        val visible = records.filter { !it.state.isTerminal }
+        pausedIds = visible.filter { it.state == DownloadState.PAUSED && it.pauseReason in setOf(PauseReason.USER, PauseReason.SYSTEM) }
+            .map { notificationId(it.id) }.toSet()
         val newIds = visible.map { notificationId(it.id) }.toSet()
         (activeIds - newIds).forEach(manager::cancel)
         activeIds = newIds
         if (!allowed()) return
         visible.forEach { record ->
             val builder = base(ACTIVE_CHANNEL).setContentTitle(record.fileName).setContentText(progressText(record))
-                .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setGroup(ACTIVE_GROUP)
+                .setOngoing(notificationId(record.id) !in pausedIds).setOnlyAlertOnce(true).setSilent(true).setGroup(ACTIVE_GROUP)
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             if (record.state == DownloadState.DOWNLOADING) {
                 record.percent?.let { builder.setProgress(100, it.toInt(), false) } ?: builder.setProgress(0, 0, true)
             } else if (record.state.isRunning) builder.setProgress(0, 0, true)
             if (record.canPause) builder.addAction(0, "Pause", control(record.id, DownloadActionReceiver.PAUSE))
+            else if (record.state == DownloadState.PAUSED) {
+                if (record.pauseReason == PauseReason.SYSTEM) builder.addAction(0, "Open Vidbox", openApp())
+                else builder.addAction(0, "Resume", resume(record.id))
+            }
             builder.addAction(0, "Cancel", control(record.id, DownloadActionReceiver.CANCEL))
             manager.notify(notificationId(record.id), builder.build())
         }
@@ -76,17 +83,22 @@ class DownloadNotifications @Inject constructor(@ApplicationContext private val 
         manager.notify(RECOVERY_ID, base(RESULT_CHANNEL).setContentTitle("Your downloads are safe")
             .setContentText("Open Vidbox to continue interrupted downloads.").setAutoCancel(true).build())
     }
-    fun clearActive() { activeIds.forEach(manager::cancel); activeIds = emptySet() }
+    fun clearActive() {
+        // User-paused tasks remain as ordinary resumable notifications after the foreground service stops.
+        (activeIds - pausedIds).forEach(manager::cancel)
+        activeIds = pausedIds
+    }
     fun clearRecovery() = manager.cancel(RECOVERY_ID)
     fun allowed(): Boolean = manager.areNotificationsEnabled() &&
         (Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
 
     private fun base(channel: String) = NotificationCompat.Builder(context, channel)
         .setSmallIcon(R.drawable.ic_download).setColor(0xFF006B63.toInt())
-        .setContentIntent(PendingIntent.getActivity(context, 1,
-            Intent(context, MainActivity::class.java).putExtra(MainActivity.OPEN_DOWNLOADS, true)
-                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+        .setContentIntent(openApp())
+    private fun openApp(): PendingIntent = PendingIntent.getActivity(context, 1,
+        Intent(context, MainActivity::class.java).putExtra(MainActivity.OPEN_DOWNLOADS, true)
+            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     private fun control(id: String, action: String): PendingIntent = PendingIntent.getBroadcast(context, 0,
         Intent(context, DownloadActionReceiver::class.java).setAction(action).setData(Uri.parse("vidbox://transfer/$id/$action"))
             .putExtra(DownloadService.EXTRA_ID, id), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -100,7 +112,12 @@ class DownloadNotifications @Inject constructor(@ApplicationContext private val 
         DownloadState.DOWNLOADING -> listOfNotNull(record.percent?.let { "${it.toInt()}%" },
             "${DisplayFormat.bytes(record.speedBytesPerSecond)}/s", record.etaSeconds?.let { "${DisplayFormat.duration(it)} left" }).joinToString(" · ")
         DownloadState.PROCESSING -> "Finishing media and saving to your folder…"
-        DownloadState.PAUSED -> if (record.pauseReason == PauseReason.WIFI) "Waiting for unmetered Wi-Fi" else "Waiting for connection"
+        DownloadState.PAUSED -> when (record.pauseReason) {
+            PauseReason.WIFI -> "Waiting for unmetered Wi-Fi"
+            PauseReason.NETWORK -> "Waiting for connection"
+            PauseReason.SYSTEM -> "Paused by Android · open Vidbox to resume"
+            else -> "Paused · ready to resume"
+        }
         else -> record.state.name.lowercase().replaceFirstChar { it.uppercase() }
     }
 

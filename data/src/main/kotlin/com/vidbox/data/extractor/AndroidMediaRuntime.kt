@@ -31,13 +31,14 @@ class AndroidMediaRuntime @Inject constructor(@ApplicationContext private val co
                 if (!pythonReady) {
                     val base = File(context.noBackupFilesDir, "youtubedl-android")
                     val marker = File(base, "bundled-runtime.version")
-                    if (runCatching { marker.readText() }.getOrNull() != BuildConfig.MEDIA_RUNTIME_VERSION) {
+                    val packagedVersion = "${BuildConfig.MEDIA_RUNTIME_VERSION}:${BuildConfig.MEDIA_ENGINE_VERSION}"
+                    if (runCatching { marker.readText() }.getOrNull() != packagedVersion) {
                         // The upstream initializer only copies a missing zipapp; explicitly adopt engine updates with each bundled release.
                         val script = File(base, "yt-dlp/yt-dlp")
                         if (script.exists() && !script.delete()) throw Errors.exception(ErrorCode.ENGINE)
                     }
                     YoutubeDL.init(context)
-                    marker.writeText(BuildConfig.MEDIA_RUNTIME_VERSION)
+                    marker.writeText(packagedVersion)
                     pythonReady = true
                 }
                 if (tool == Tool.FFMPEG && !ffmpegReady) { FFmpeg.init(context); ffmpegReady = true }

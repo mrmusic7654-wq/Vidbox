@@ -24,9 +24,14 @@ import javax.inject.Singleton
 abstract class InfrastructureBindings {
     @Binds @Singleton abstract fun downloads(impl: RoomDownloadRepository): DownloadRepository
     @Binds @Singleton abstract fun settings(impl: DataStoreSettingsRepository): SettingsRepository
-    @Binds @Singleton abstract fun network(impl: AndroidNetworkMonitor): NetworkMonitor
     @Binds @Singleton abstract fun cipher(impl: KeystoreSecretCipher): SecretCipher
     @Binds @Singleton abstract fun logger(impl: AndroidEventLogger): EventLogger
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class NetworkBindings {
+    @Binds @Singleton abstract fun network(impl: AndroidNetworkMonitor): NetworkMonitor
 }
 
 @Module

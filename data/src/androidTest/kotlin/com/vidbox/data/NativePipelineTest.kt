@@ -89,7 +89,7 @@ class NativePipelineTest {
 
     @Test fun bundledYtDlpActuallyExecutes() = runBlocking {
         val version = runner.run(AndroidMediaRuntime.Tool.YT_DLP, listOf("--version"), UUID.randomUUID().toString(), captureJson = true).trim()
-        assertTrue("An actual yt-dlp version was expected, got $version", version.matches(Regex("\\d{4}\\.\\d{2}\\.\\d{2}.*")))
+        assertEquals("The pinned engine must override the runtime AAR’s older zipapp", BuildConfig.MEDIA_ENGINE_VERSION, version)
     }
 
     @Test fun dashUrlToExtractionFormatsDownloadMergeMediaStoreAndRoom() = runBlocking {
@@ -116,7 +116,7 @@ class NativePipelineTest {
                 val queue = DownloadQueue(repository, settings, network, downloader, storage, logger, TimeProvider(System::currentTimeMillis))
                 queue.run { it.outputUri?.let(published::add) }
                 val finished = repository.get(id)!!
-                assertEquals(finished.error?.message, DownloadState.COMPLETED, finished.state)
+                assertEquals("${finished.error?.message}\n$events", DownloadState.COMPLETED, finished.state)
                 assertNotNull(finished.outputUri); assertNull(finished.pendingUri)
                 assertTrue(storage.exists(finished.outputUri!!))
                 assertTrue(finished.downloadedBytes > 0)

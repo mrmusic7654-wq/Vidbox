@@ -7,6 +7,7 @@ import com.vidbox.domain.repository.*
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.*
 import javax.inject.Inject
 
@@ -32,7 +33,8 @@ class AppScreensTest {
         compose.waitUntil(5000) { compose.onAllNodesWithTag("formats_screen").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Open-license test film").assertIsDisplayed()
         compose.onNodeWithText("Quality & format").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithTag("format_18::mp4").performScrollTo().performClick()
+        compose.onNodeWithTag("formats_screen").performScrollToNode(hasTestTag("format_18::mp4"))
+        compose.onNodeWithTag("format_18::mp4").performClick()
         compose.onNodeWithText("Video + audio · no merging needed").assertIsDisplayed()
         compose.onNodeWithTag("download_button").assertIsEnabled()
     }
@@ -64,10 +66,14 @@ class AppScreensTest {
     }
     @Test fun settingsPersistAcrossActivityRecreation() {
         compose.onNodeWithTag("nav_settings").performClick()
-        compose.onNodeWithTag("settings_wifi").performScrollTo().performClick().assertIsOn()
+        compose.onNodeWithTag("settings_screen").performScrollToNode(hasTestTag("settings_wifi"))
+        compose.onNodeWithTag("settings_wifi").performClick()
+        compose.waitUntil(5000) { runBlocking { settings.settings.first().wifiOnly } }
+        compose.onNodeWithTag("settings_wifi").assertIsOn()
         compose.waitForIdle()
         compose.activityRule.scenario.recreate()
         compose.onNodeWithTag("nav_settings").performClick()
-        compose.onNodeWithTag("settings_wifi").performScrollTo().assertIsOn()
+        compose.onNodeWithTag("settings_screen").performScrollToNode(hasTestTag("settings_wifi"))
+        compose.onNodeWithTag("settings_wifi").assertIsOn()
     }
 }

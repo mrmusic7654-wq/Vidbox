@@ -39,7 +39,7 @@ Install **JDK 17**, Android SDK platform **36**, and build-tools **36.0.0**. And
 python3 scripts/check-native-packaging.py
 ```
 
-The Gradle wrapper has a pinned distribution SHA-256. Dependencies are centrally versioned in `gradle/libs.versions.toml`. Native packages are resolved from Maven Central; no untracked executable, user-installed Python, shell package manager, or executable download at first launch is required.
+The Gradle wrapper has a pinned distribution SHA-256. Dependencies are centrally versioned in `gradle/libs.versions.toml`. Native packages are resolved from Maven Central. A current, immutable yt-dlp **2026.08.19** zipapp is fetched at build time from its official release and checked against `engine.lock` before being bundled; no untracked executable, user-installed Python, shell package manager, or executable download at first launch is required.
 
 ### APKs and CI
 

@@ -18,6 +18,8 @@ The pinned `io.github.junkfood02.youtubedl-android` 0.18.1 library/ffmpeg AARs p
 - `libqjs.so` for the public-page JavaScript extraction machinery supported by yt-dlp;
 - `libffmpeg.so` and its dependency archive.
 
+The AAR's aging yt-dlp zipapp is overlaid by official **yt-dlp 2026.08.19**, fetched only during a build and verified against the SHA-256 and immutable URL in `engine.lock`. This keeps the extraction code current without introducing an on-device remote code updater. The device smoke test asserts the exact pinned version, so an ineffective resource overlay fails CI. The Python/FFmpeg/QuickJS native package is still the Android-compatible AAR, not a desktop executable.
+
 AGP's `jniLibs.useLegacyPackaging = true` extracts executable libraries to `applicationInfo.nativeLibraryDir`. Executable code is **not** downloaded into a writable app directory and then chmod'ed, which would fail modern Android execution rules. The bundled zipapp is interpreted by the APK's executable Python runtime. `YoutubeDL.init` initializes these known resources lazily on `Dispatchers.IO`. `FFmpeg.init` is deferred until processing is needed. A version marker ensures a newer packaged engine replaces the previously installed zipapp after app upgrades.
 
 We intentionally **do not use the wrapper's `execute`/`destroyProcessById` implementation**: its output buffers are unbounded and its child-process cleanup uses a shell pipeline. `NativeProcessRunner` uses `ProcessBuilder(List<String>)`, a static Python session-leader launcher, structured coroutine children for stdout/stderr, and TERM/KILL of the owned process group. User text is never interpolated into the launcher or passed as a shell command. Extraction JSON is capped at 8 MiB; stderr and progress lines are bounded. Exit failures become categorized, redacted user errors.
@@ -52,7 +54,7 @@ Known sizes are checked against free staging space plus a 24 MiB reserve. Mergin
 
 ## Background and recovery
 
-User actions start an explicit, non-exported `dataSync` foreground service. It calls `startForeground` promptly and owns the queue independent of Activity/Compose lifecycles. Notifications show individual filename, measured progress/speed and applicable pause/cancel actions. A timed partial wake lock is renewed **only while a job is working**, not while waiting for a network.
+User actions start an explicit, non-exported `dataSync` foreground service. It calls `startForeground` promptly and owns the queue independent of Activity/Compose lifecycles. Notifications show individual filename, measured progress/speed and applicable pause/cancel actions. A user-paused task retains an ordinary notification with a working Resume PendingIntent even after its foreground service stops. A timed partial wake lock is renewed **only while a job is working**, not while waiting for a network.
 
 - **Rotation / Activity recreation / home gesture / task swipe:** the service and Room queue remain independent of the UI.
 - **Network loss / Data Saver block / disallowed mobile or metered connection:** active network work is paused, its process/call is cancelled, and partial data is preserved. The foreground service waits without a wake lock and resumes when network policy allows it. Local processing can finish offline.

@@ -18,10 +18,13 @@ object FileNames {
         if (reserved.matches(name.substringBefore('.'))) name = "Media_$name"
         val result = StringBuilder()
         var bytes = 0
-        name.codePoints().forEachOrdered { codePoint ->
-            val part = String(Character.toChars(codePoint))
+        val codePoints = name.codePoints().iterator()
+        while (codePoints.hasNext()) {
+            val part = String(Character.toChars(codePoints.nextInt()))
             val count = part.toByteArray(StandardCharsets.UTF_8).size
-            if (bytes + count <= maxBytes) { result.append(part); bytes += count }
+            if (bytes + count > maxBytes) break
+            result.append(part)
+            bytes += count
         }
         return result.toString().trimEnd('.', ' ').ifBlank { "Media" }
     }

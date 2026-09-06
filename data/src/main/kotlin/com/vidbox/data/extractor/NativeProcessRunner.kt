@@ -9,7 +9,9 @@ import com.vidbox.domain.repository.EventLogger
 import com.vidbox.domain.util.ErrorMapper
 import kotlinx.coroutines.*
 import java.io.InputStream
+import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,7 +30,9 @@ class NativeProcessRunner @Inject constructor(
                 listOf("--ignore-config", "--no-cache-dir", "--no-colors", "--no-playlist",
                     "--socket-timeout", "25", "--js-runtimes", "quickjs:${environment.quickJs.absolutePath}") + arguments
             } else arguments
-            val command = listOf(environment.python.absolutePath, "-u", "-c", LAUNCHER,
+            val handshake = UUID.randomUUID().toString()
+            val pidPrefix = "VIDBOX_PID:$handshake:"
+            val command = listOf(environment.python.absolutePath, "-u", "-c", LAUNCHER, handshake,
                 if (tool == AndroidMediaRuntime.Tool.YT_DLP) "python" else "exec",
                 environment.executable.absolutePath) + args
             val builder = ProcessBuilder(command).directory(environment.workingDirectory)
@@ -52,15 +56,17 @@ class NativeProcessRunner @Inject constructor(
                 }
                 val stderr = async(Dispatchers.IO) {
                     val tail = StringBuilder()
-                    var first = true
                     readLines(process.errorStream, MAX_LINE) { line ->
-                        if (first && line.startsWith("VIDBOX_PID:")) {
-                            line.substringAfter(':').toIntOrNull()?.takeIf { it > 1 }?.let(group::set)
+                        if (group.get() == 0 && line.startsWith(pidPrefix)) {
+                            val pid = line.removePrefix(pidPrefix).toIntOrNull()?.takeIf { it > 1 }
+                                ?: throw Errors.exception(ErrorCode.ENGINE)
+                            group.set(pid)
+                            // The child cannot execute extraction or spawn descendants until its group is registered.
+                            process.outputStream.apply { write(1); flush(); close() }
                         } else {
                             tail.append(line).append('\n')
                             if (tail.length > MAX_ERROR) tail.delete(0, tail.length - MAX_ERROR)
                         }
-                        first = false
                     }
                     tail.toString()
                 }
@@ -81,24 +87,31 @@ class NativeProcessRunner @Inject constructor(
     }
 
     private suspend fun readLines(stream: InputStream, maxLine: Int, consume: suspend (String) -> Unit) {
-        stream.bufferedReader().use { reader ->
-            val buffer = CharArray(4096)
-            val line = StringBuilder()
-            while (true) {
-                currentCoroutineContext().ensureActive()
-                val count = reader.read(buffer)
-                if (count == -1) break
-                for (i in 0 until count) {
-                    val char = buffer[i]
-                    if (char == '\n' || char == '\r') {
-                        if (line.isNotEmpty()) { consume(line.toString()); line.setLength(0) }
-                    } else {
-                        if (line.length >= maxLine) throw Errors.exception(ErrorCode.ENGINE)
-                        line.append(char)
+        try {
+            stream.bufferedReader().use { reader ->
+                val buffer = CharArray(4096)
+                val line = StringBuilder()
+                while (true) {
+                    currentCoroutineContext().ensureActive()
+                    val count = reader.read(buffer)
+                    if (count == -1) break
+                    for (i in 0 until count) {
+                        val char = buffer[i]
+                        if (char == '\n' || char == '\r') {
+                            if (line.isNotEmpty()) { consume(line.toString()); line.setLength(0) }
+                        } else {
+                            if (line.length >= maxLine) throw Errors.exception(ErrorCode.ENGINE)
+                            line.append(char)
+                        }
                     }
                 }
+                if (line.isNotEmpty()) consume(line.toString())
             }
-            if (line.isNotEmpty()) consume(line.toString())
+        } catch (error: IOException) {
+            // Android interrupts a blocking pipe read when cancellation closes its descriptor.
+            // Preserve structured cancellation instead of promoting that close into a fatal I/O error.
+            currentCoroutineContext().ensureActive()
+            throw error
         }
     }
 
@@ -125,9 +138,11 @@ class NativeProcessRunner @Inject constructor(
         private val LAUNCHER = """
             import os, sys, runpy
             os.setsid()
-            print("VIDBOX_PID:" + str(os.getpid()), file=sys.stderr, flush=True)
-            mode = sys.argv[1]
-            sys.argv = sys.argv[2:]
+            print("VIDBOX_PID:" + sys.argv[1] + ":" + str(os.getpid()), file=sys.stderr, flush=True)
+            if sys.stdin.buffer.read(1) != b"\x01":
+                sys.exit(1)
+            mode = sys.argv[2]
+            sys.argv = sys.argv[3:]
             if mode == "python":
                 runpy.run_path(sys.argv[0], run_name="__main__")
             else:

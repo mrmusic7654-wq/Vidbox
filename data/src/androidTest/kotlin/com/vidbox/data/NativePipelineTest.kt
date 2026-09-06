@@ -54,7 +54,7 @@ class NativePipelineTest {
                     val path = request.path.orEmpty().substringBefore('?').removePrefix("/")
                     val file = File(fixtures, path).canonicalFile
                     if (!file.path.startsWith(fixtures.canonicalPath + File.separator) || !file.isFile) return MockResponse().setResponseCode(404)
-                    val mime = when (file.extension) { "mpd" -> "application/dash+xml"; "mp4" -> "video/mp4"; "m4a" -> "audio/mp4"; else -> "application/octet-stream" }
+                    val mime = when (file.extension) { "mpd" -> "application/dash+xml"; "m3u8" -> "application/vnd.apple.mpegurl"; "mp4" -> "video/mp4"; "m4a" -> "audio/mp4"; else -> "application/octet-stream" }
                     val bytes = file.readBytes() // Small, generated instrumentation fixtures, never used by the production downloader.
                     val response = MockResponse().setHeader("Content-Type", mime).setHeader("Accept-Ranges", "bytes").setHeader("ETag", "\"fixture-v1\"")
                     if (request.method == "HEAD") return response.setHeader("Content-Length", bytes.size)
@@ -85,6 +85,10 @@ class NativePipelineTest {
         runner.run(AndroidMediaRuntime.Tool.FFMPEG, listOf("-nostdin", "-hide_banner", "-loglevel", "error", "-y",
             "-i", File(fixtures, "video.mp4").path, "-i", File(fixtures, "audio.m4a").path,
             "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-f", "dash", File(fixtures, "manifest.mpd").path), id)
+        runner.run(AndroidMediaRuntime.Tool.FFMPEG, listOf("-nostdin", "-hide_banner", "-loglevel", "error", "-y",
+            "-i", File(fixtures, "video.mp4").path, "-i", File(fixtures, "audio.m4a").path,
+            "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-hls_time", "1", "-hls_list_size", "0", "-f", "hls",
+            File(fixtures, "playlist.m3u8").path), id)
     }
 
     @Test fun bundledYtDlpActuallyExecutes() = runBlocking {
@@ -130,6 +134,31 @@ class NativePipelineTest {
                 // The database stores only encrypted URL-bearing specifications.
                 assertFalse(database.downloads().get(id)!!.specCiphertext.contains(media.url))
             } finally { database.close() }
+        }
+    }
+
+    @Test fun muxedHlsIsRemuxedIntoItsAdvertisedMp4Container() = runBlocking {
+        withTimeout(120_000) {
+            val http = OkHttpClient()
+            val media = CompositeVideoExtractor(http, runner, MetadataParser(json), logger)
+                .analyze(server.url("/playlist.m3u8").toString())
+            val selection = FormatPlanner().options(media).first { it.container == "mp4" && !it.requiresMerging }
+            val id = UUID.randomUUID().toString()
+            val files = WorkFiles(context)
+            try {
+                val spec = DownloadSpec(media.url, "Licensed HLS fixture", null, media.source, null, selection, false, null)
+                val downloader = HybridDownloader(HttpRangeDownloader(http, json), runner, FfmpegMediaProcessor(runner), files, logger)
+                val stages = mutableListOf<DownloadState>()
+                val result = downloader.download(DownloadRecord(id, spec, "fixture.mp4", state = DownloadState.EXTRACTING, createdAt = 0)) { stages += it.state }
+                assertTrue(stages.contains(DownloadState.PROCESSING))
+                val header = File(result.path).inputStream().use { input -> ByteArray(12).also { input.read(it) } }
+                assertEquals("ftyp", String(header, 4, 4, Charsets.US_ASCII))
+                MediaMetadataRetriever().use { retriever ->
+                    retriever.setDataSource(result.path)
+                    assertEquals("yes", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO))
+                    assertEquals("yes", retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO))
+                }
+            } finally { files.discard(id) }
         }
     }
 

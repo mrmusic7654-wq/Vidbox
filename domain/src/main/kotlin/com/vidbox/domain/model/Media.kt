@@ -19,7 +19,8 @@ data class MediaFormat(
     val protocol: String? = null,
     val note: String? = null,
 ) {
-    val qualityLabel: String get() = if (hasVideo) height?.let { "${it}p" } ?: "Original video"
+    val qualityLabel: String get() = if (height == null && videoCodec == null && audioCodec == null && bitrateKbps == null) "Original media"
+        else if (hasVideo) height?.let { "${it}p" } ?: "Original video"
         else bitrateKbps?.takeIf { it > 0 }?.let { "${it.toInt()} kbps" } ?: "Original audio"
 }
 

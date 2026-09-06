@@ -21,7 +21,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AndroidMediaStorage @Inject constructor(@ApplicationContext private val context: Context) : MediaStorage {
+class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private val context: Context) : MediaStorage {
     private val resolver = context.contentResolver
     override suspend fun publish(id: String, media: StagedMedia, fileName: String, destinationTree: String?,
         onPending: suspend (String?) -> Unit): StoredMedia = withContext(Dispatchers.IO) {

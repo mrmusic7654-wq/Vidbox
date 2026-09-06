@@ -4,6 +4,8 @@ import android.content.Context
 import com.vidbox.data.BuildConfig
 import com.vidbox.domain.model.ErrorCode
 import com.vidbox.domain.model.Errors
+import com.vidbox.domain.model.DownloadException
+import com.vidbox.domain.util.ErrorMapper
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,7 +19,7 @@ import javax.inject.Singleton
 
 /** The Maven AAR supplies ABI-specific, executable native libraries and the actual yt-dlp zipapp. */
 @Singleton
-class AndroidMediaRuntime @Inject constructor(@ApplicationContext private val context: Context) {
+class AndroidMediaRuntime @Inject constructor(@param:ApplicationContext private val context: Context) {
     enum class Tool { YT_DLP, FFMPEG }
     data class Environment(val python: File, val executable: File, val quickJs: File,
         val workingDirectory: File, val variables: Map<String, String>)
@@ -43,7 +45,9 @@ class AndroidMediaRuntime @Inject constructor(@ApplicationContext private val co
                 }
                 if (tool == Tool.FFMPEG && !ffmpegReady) { FFmpeg.init(context); ffmpegReady = true }
             } catch (error: Exception) {
-                throw Errors.exception(ErrorCode.ENGINE, error)
+                val storageFailure = generateSequence<Throwable>(error) { it.cause }.take(8).map(ErrorMapper::from)
+                    .firstOrNull { it.code in setOf(ErrorCode.LOW_STORAGE, ErrorCode.PERMISSION) }
+                throw DownloadException(storageFailure ?: Errors.of(ErrorCode.ENGINE), error)
             }
         }
         val native = File(context.applicationInfo.nativeLibraryDir)

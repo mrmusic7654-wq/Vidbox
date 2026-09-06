@@ -9,7 +9,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ForegroundDownloadScheduler @Inject constructor(@ApplicationContext private val context: Context) : DownloadScheduler {
+class ForegroundDownloadScheduler @Inject constructor(@param:ApplicationContext private val context: Context) : DownloadScheduler {
     override fun start() {
         ContextCompat.startForegroundService(context, Intent(context, DownloadService::class.java).setAction(DownloadService.WAKE))
     }

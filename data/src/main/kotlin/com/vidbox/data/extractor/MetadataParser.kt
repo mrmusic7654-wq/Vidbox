@@ -37,9 +37,11 @@ class MetadataParser @Inject constructor(private val json: Json) {
         if (!id.matches(Regex("[A-Za-z0-9_.-]{1,128}"))) return null
         val videoCodec = obj.string("vcodec")
         val audioCodec = obj.string("acodec")
-        val hasVideo = videoCodec?.let { it != "none" } ?: (obj.number("height")?.let { it > 0 } ?: false)
-        val hasAudio = audioCodec?.let { it != "none" }
-        if (!hasVideo && hasAudio != true) return null
+        val audioContainer = ext in setOf("m4a", "mp3", "aac", "opus", "ogg", "oga", "wav", "flac", "weba")
+        // Generic HLS and original files can omit both codecs. Classify the container without inventing codec/resolution fields.
+        val hasVideo = videoCodec?.let { it != "none" } ?: (obj.number("height")?.let { it > 0 } ?: !audioContainer)
+        val hasAudio = audioCodec?.let { it != "none" } ?: if (audioContainer) true else null
+        if (!hasVideo && hasAudio == false) return null
         val exact = obj.number("filesize")?.toLong()?.takeIf { it > 0 }
         val approximate = obj.number("filesize_approx")?.toLong()?.takeIf { it > 0 }
         return MediaFormat(id = id, extension = ext,

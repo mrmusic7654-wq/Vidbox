@@ -23,7 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DownloadNotifications @Inject constructor(@ApplicationContext private val context: Context) {
+class DownloadNotifications @Inject constructor(@param:ApplicationContext private val context: Context) {
     private val manager = NotificationManagerCompat.from(context)
     private var activeIds = emptySet<Int>()
     private var pausedIds = emptySet<Int>()
@@ -43,7 +43,8 @@ class DownloadNotifications @Inject constructor(@ApplicationContext private val 
         if (!allowed()) return
         visible.forEach { record ->
             val builder = base(ACTIVE_CHANNEL).setContentTitle(record.fileName).setContentText(progressText(record))
-                .setOngoing(notificationId(record.id) !in pausedIds).setOnlyAlertOnce(true).setSilent(true).setGroup(ACTIVE_GROUP)
+                .setOngoing(notificationId(record.id) !in pausedIds).setOnlyAlertOnce(true).setSilent(true)
+                .setGroup(if (notificationId(record.id) in pausedIds) PAUSED_GROUP else ACTIVE_GROUP)
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             if (record.state == DownloadState.DOWNLOADING) {
                 record.percent?.let { builder.setProgress(100, it.toInt(), false) } ?: builder.setProgress(0, 0, true)
@@ -128,6 +129,7 @@ class DownloadNotifications @Inject constructor(@ApplicationContext private val 
         private const val ACTIVE_CHANNEL = "vidbox_transfers_v1"
         private const val RESULT_CHANNEL = "vidbox_results_v1"
         private const val ACTIVE_GROUP = "vidbox_active"
+        private const val PAUSED_GROUP = "vidbox_paused"
         private fun notificationId(id: String) = 2000 + (id.hashCode() and 0x03FFFFFF)
         fun createChannels(context: Context) {
             val manager = context.getSystemService(NotificationManager::class.java)

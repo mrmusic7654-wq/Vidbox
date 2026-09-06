@@ -15,6 +15,7 @@ interface Downloader {
 }
 
 interface MediaProcessor {
+    suspend fun remux(inputPath: String, outputPath: String, container: String, hasVideo: Boolean): StagedMedia
     suspend fun merge(videoPath: String, audioPath: String, outputPath: String, container: String): StagedMedia
 }
 

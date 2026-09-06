@@ -21,6 +21,6 @@ object UrlValidator {
     }
 
     fun findInSharedText(text: String): String =
-        Regex("https://[^\\s<>]+", RegexOption.IGNORE_CASE).find(text)?.value
+        Regex("https://[^\\s<>]+", RegexOption.IGNORE_CASE).find(text.take(16384))?.value
             ?.trimEnd('.', ',', ')', ']', '}', ';') ?: text.take(8192)
 }

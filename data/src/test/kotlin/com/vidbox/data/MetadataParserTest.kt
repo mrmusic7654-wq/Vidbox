@@ -27,6 +27,12 @@ class MetadataParserTest {
             parser.parse("https://example.com", """{"is_live":true}""")
         }.error.code)
     }
+    @Test fun genericHlsWithMissingCodecsStillOffersItsOriginalFormat() {
+        val media = parser.parse("https://example.com/stream.m3u8", """{"formats":[{"format_id":"0","ext":"mp4","protocol":"m3u8_native"}]}""")
+        val format = media.formats.single()
+        assertNull(format.videoCodec); assertNull(format.audioCodec); assertNull(format.height); assertNull(format.hasAudio)
+        assertEquals("Original media", format.qualityLabel)
+    }
     @Test fun rejectsSelectorInjection() {
         assertThrows(DownloadException::class.java) {
             parser.parse("https://example.com", """{"formats":[{"format_id":"best+exec","ext":"mp4","vcodec":"avc1","acodec":"aac"}]}""")

@@ -31,7 +31,7 @@ class HybridDownloader @Inject constructor(
             WorkFiles.requireSpace(dir)
             if (spec.isDirect) {
                 val file = direct.transfer(spec.url, File(dir, "original.${selection.primary.extension}"), onProgress)
-                return@withContext StagedMedia(file.path, FileNames.mime(selection.container, selection.primary.hasVideo), file.length())
+                return@withContext finishSingle(file, record, onProgress)
             }
             val formats = listOfNotNull(selection.primary, selection.audio)
             val totals = formats.map { it.sizeBytes }.toMutableList()
@@ -72,9 +72,25 @@ class HybridDownloader @Inject constructor(
                 processor.merge(downloaded[0].path, downloaded[1].path, File(dir, "media.${selection.container}").path, selection.container)
                     .also { logger.event("processing.completed", record.id) }
             } else {
-                val file = downloaded.single()
-                StagedMedia(file.path, FileNames.mime(selection.container, selection.primary.hasVideo), file.length())
+                finishSingle(downloaded.single(), record, onProgress)
             }
         }
+    private suspend fun finishSingle(file: File, record: DownloadRecord, onProgress: suspend (DownloadProgress) -> Unit): StagedMedia {
+        val selected = record.spec.selection
+        val transportStream = file.inputStream().use { input ->
+            val head = ByteArray(377)
+            val count = input.read(head)
+            count == head.size && head[0] == 0x47.toByte() && head[188] == 0x47.toByte() && head[376] == 0x47.toByte()
+        }
+        val hls = selected.primary.protocol?.contains("m3u8") == true
+        if (selected.container != "ts" && (hls || transportStream)) {
+            onProgress(DownloadProgress(DownloadState.PROCESSING, file.length(), file.length()))
+            logger.event("processing.started", record.id, mapOf("operation" to "remux"))
+            return processor.remux(file.path, File(file.parentFile, "media.${selected.container}").path, selected.container, selected.primary.hasVideo)
+                .also { logger.event("processing.completed", record.id) }
+        }
+        return StagedMedia(file.path, FileNames.mime(selected.container, selected.primary.hasVideo), file.length())
+    }
+
     override suspend fun discard(id: String) = files.discard(id)
 }

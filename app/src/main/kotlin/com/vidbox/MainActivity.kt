@@ -26,6 +26,7 @@ import com.vidbox.presentation.settings.SettingsViewModel
 import com.vidbox.presentation.theme.VidboxTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -52,7 +53,8 @@ class MainActivity : ComponentActivity() {
                     folder?.name ?: "Selected folder"
                 }
                 settings.location(uri.toString(), label)
-            } catch (_: Exception) { settings.report("This folder is not writable. Please choose another folder.") }
+            } catch (cancel: CancellationException) { throw cancel }
+            catch (_: Exception) { settings.report("This folder is not writable. Please choose another folder.") }
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {

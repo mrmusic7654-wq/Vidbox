@@ -13,7 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -53,7 +53,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
     var destination by rememberSaveable { mutableStateOf(Destination.HOME) }
     val snackbars = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val clipboard = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
     val focus = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     var details by remember { mutableStateOf<DownloadRecord?>(null) }
@@ -121,7 +121,13 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                 Box(Modifier.fillMaxSize().padding(insets)) {
                     when (destination) {
                         Destination.HOME -> HomeScreen(homeState, active, recent, network, home::input,
-                            onPaste = { clipboard.getText()?.text?.let(home::paste) ?: scope.launch { snackbars.showSnackbar("Your clipboard is empty") }.let {} },
+                            onPaste = {
+                                scope.launch {
+                                    val item = clipboard.getClipEntry()?.clipData?.let { if (it.itemCount > 0) it.getItemAt(0) else null }
+                                    val text = item?.text?.take(16384)?.toString() ?: item?.uri?.toString()
+                                    if (text != null) home.paste(text) else snackbars.showSnackbar("Your clipboard has no text link")
+                                }
+                            },
                             onAnalyze = { focus.clearFocus(); home.analyze() }, onCancel = home::cancelAnalysis,
                             onDownloads = { destination = Destination.DOWNLOADS }, onHistory = { destination = Destination.HISTORY }, callbacks = callbacks)
                         Destination.DOWNLOADS -> DownloadsScreen(active, notificationsAllowed, preferences.maxConcurrent, onRequestNotifications,

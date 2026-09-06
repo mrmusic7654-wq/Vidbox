@@ -27,6 +27,7 @@ class DownloadService : Service() {
     private var preferences = AppSettings()
     private var lastStartId = 0
     private var rerun = false
+    private var pendingCommands = 0
     private var foreground = false
 
     @OptIn(FlowPreview::class)
@@ -45,9 +46,10 @@ class DownloadService : Service() {
         wakeLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "$packageName:downloads")
             .apply { setReferenceCounted(false) }
         scope.launch {
-            combine(repository.observeActive(), settings.settings) { rows, prefs -> rows to prefs }
-                .sample(1000).collect { (rows, prefs) ->
-                    preferences = prefs
+            combine(repository.observeActive(), settings.settings) { rows, prefs ->
+                preferences = prefs
+                rows
+            }.sample(1000).collect { rows ->
                     notifications.update(rows)
                     manageWakeLock(rows.any { it.state.isRunning })
                 }
@@ -57,13 +59,22 @@ class DownloadService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!foreground) { stopSelf(); return START_NOT_STICKY }
         lastStartId = startId
+        rerun = true
+        pendingCommands++
         scope.launch {
-            if (intent?.action == RESUME) {
-                intent.getStringExtra(EXTRA_ID)?.takeIf { it.matches(Regex("[a-f0-9-]{36}")) }?.let { id ->
-                    repository.transition(id, setOf(DownloadState.PAUSED, DownloadState.FAILED, DownloadState.CANCELLED), DownloadState.QUEUED)
+            try {
+                if (intent?.action == RESUME) {
+                    intent.getStringExtra(EXTRA_ID)?.takeIf { it.matches(Regex("[a-f0-9-]{36}")) }?.let { id ->
+                        repository.transition(id, setOf(DownloadState.PAUSED, DownloadState.FAILED, DownloadState.CANCELLED), DownloadState.QUEUED)
+                    }
                 }
+            } catch (cancel: CancellationException) { throw cancel }
+            catch (error: Exception) {
+                logger.event("service_command.failed", fields = mapOf("type" to error.javaClass.simpleName))
+            } finally {
+                pendingCommands--
+                if (scope.isActive) startSession()
             }
-            startSession()
         }
         return START_STICKY
     }
@@ -72,25 +83,39 @@ class DownloadService : Service() {
         rerun = true
         if (runner?.isActive == true) return
         runner = scope.launch {
+            var drained = false
             try {
-                do {
+                while (isActive) {
+                    val ownedStartId = lastStartId
                     rerun = false
                     queue.run { notifications.terminal(it, preferences.completionNotifications) }
-                } while (rerun || repository.active().any { it.state == DownloadState.QUEUED || it.state.isRunning })
+                    val remaining = repository.active()
+                    if (rerun || pendingCommands > 0 || lastStartId != ownedStartId || remaining.any {
+                            it.state == DownloadState.QUEUED || it.state.isRunning ||
+                                it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI)
+                        }) {
+                        yield()
+                        continue
+                    }
+                    // No suspension between this check and teardown. AMS also rejects an old stop ID
+                    // if a newer start is pending delivery, closing the enqueue-at-idle race.
+                    if (!stopSelfResult(ownedStartId)) { yield(); continue }
+                    notifications.update(remaining)
+                    drained = true
+                    break
+                }
             } catch (cancel: CancellationException) { throw cancel }
             catch (error: Exception) {
                 logger.event("service.failed", fields = mapOf("type" to error.javaClass.simpleName))
                 queue.pauseForSystemLimit()
                 notifications.recovery()
             } finally {
-                withContext(NonCancellable) {
-                    // Flush state once even for jobs that finish before the one-second notification sampler.
-                    runCatching { notifications.update(repository.active()) }
-                }
+                runner = null
                 manageWakeLock(false)
                 notifications.clearActive()
+                foreground = false
                 stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelfResult(lastStartId)
+                if (!drained) stopSelf()
             }
         }
     }

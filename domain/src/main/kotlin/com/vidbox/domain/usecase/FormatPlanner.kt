@@ -38,7 +38,7 @@ class FormatPlanner @Inject constructor() {
     }
 
     private fun supportsVideo(container: String, codec: String?): Boolean = when (container) {
-        "mp4" -> codec?.lowercase()?.let { c -> listOf("avc", "h264", "hev", "hvc", "h265", "av01", "av1", "mpeg4").any(c::startsWith) } == true
+        "mp4" -> codec?.lowercase()?.let { c -> listOf("avc", "h264", "hev", "hvc", "h265", "av01", "av1", "mpeg4", "mp4v").any(c::startsWith) } == true
         "webm" -> codec?.lowercase()?.let { c -> listOf("vp8", "vp9", "vp0", "av01", "av1").any(c::startsWith) } == true
         "mkv" -> true
         else -> false

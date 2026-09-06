@@ -20,8 +20,8 @@ interface SecretCipher {
 @Singleton
 class KeystoreSecretCipher @Inject constructor() : SecretCipher {
     private val alias = "vidbox.downloads.v1"
-    @Synchronized
-    private fun key(): SecretKey {
+    private val secretKey: SecretKey by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { loadKey() }
+    private fun loadKey(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         (store.getKey(alias, null) as? SecretKey)?.let { return it }
         return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
@@ -33,7 +33,7 @@ class KeystoreSecretCipher @Inject constructor() : SecretCipher {
         }.generateKey()
     }
     override fun encrypt(plain: String): String {
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply { init(Cipher.ENCRYPT_MODE, key()) }
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply { init(Cipher.ENCRYPT_MODE, secretKey) }
         val encoded = cipher.iv + cipher.doFinal(plain.toByteArray(Charsets.UTF_8))
         return "v1:" + Base64.encodeToString(encoded, Base64.NO_WRAP)
     }
@@ -42,7 +42,7 @@ class KeystoreSecretCipher @Inject constructor() : SecretCipher {
         val bytes = Base64.decode(encrypted.removePrefix("v1:"), Base64.NO_WRAP)
         check(bytes.size >= 28) { "Invalid encrypted record" }
         val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply {
-            init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, bytes, 0, 12))
+            init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(128, bytes, 0, 12))
         }
         return cipher.doFinal(bytes, 12, bytes.size - 12).toString(Charsets.UTF_8)
     }

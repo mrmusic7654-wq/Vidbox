@@ -43,7 +43,9 @@ class DownloadQueue @Inject constructor(
                     jobs.entries.removeAll { it.value.isCompleted }
                     // A paused/cancelled DB row takes precedence over all late progress callbacks.
                     jobs.forEach { (id, job) ->
-                        val record = snapshot.records.find { it.id == id }
+                        // Room invalidations can deliver a snapshot taken before this session claimed a job.
+                        // Re-read the row before stopping a writer; a stale QUEUED snapshot must not cancel it.
+                        val record = repository.get(id)
                         if (record == null || !record.state.isRunning) job.cancel()
                         else if (record.state != DownloadState.PROCESSING && !snapshot.network.permits(snapshot.settings)) {
                             repository.transition(id, setOf(record.state), DownloadState.PAUSED, waitReason(snapshot.network, snapshot.settings))

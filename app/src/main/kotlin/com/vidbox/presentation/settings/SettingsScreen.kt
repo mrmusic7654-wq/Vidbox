@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import com.vidbox.BuildConfig
 import com.vidbox.domain.model.*
@@ -131,7 +133,7 @@ private fun SettingSwitch(icon: ImageVector, title: String, subtitle: String, va
             Text(title, style = MaterialTheme.typography.titleSmall)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Switch(checked = value, onCheckedChange = onValue, modifier = Modifier.testTag(tag), thumbContent = {
+        Switch(checked = value, onCheckedChange = onValue, modifier = Modifier.testTag(tag).semantics { contentDescription = title }, thumbContent = {
             if (value) Icon(Icons.Rounded.Check, null, Modifier.size(16.dp))
         })
     }

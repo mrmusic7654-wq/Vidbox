@@ -66,6 +66,7 @@ fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<Down
                 }
             }
         }
+        if (network.blocked) item { InfoBanner("Android is restricting network access. Check Data Saver or this app’s network settings.") }
         if (!network.connected) item { InfoBanner("You're offline. Queued downloads will wait for a connection.") }
         if (active.isNotEmpty()) {
             item { SectionHeading("In progress · ${active.size}", "View all", onDownloads) }

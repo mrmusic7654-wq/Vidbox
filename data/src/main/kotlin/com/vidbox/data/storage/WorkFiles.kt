@@ -28,7 +28,7 @@ class WorkFiles @Inject constructor(@ApplicationContext context: Context) {
     companion object {
         const val RESERVE_BYTES = 24L * 1024 * 1024
         fun requireSpace(directory: File, additionalBytes: Long = 0) {
-            if (directory.usableSpace < additionalBytes.coerceAtLeast(0) + RESERVE_BYTES)
+            if (directory.usableSpace < additionalBytes.coerceIn(0, Long.MAX_VALUE - RESERVE_BYTES) + RESERVE_BYTES)
                 throw Errors.exception(ErrorCode.LOW_STORAGE)
         }
     }

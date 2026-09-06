@@ -16,6 +16,7 @@ import com.vidbox.domain.util.FileNames
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import java.io.File
+import java.io.FileNotFoundException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,7 +44,8 @@ class AndroidMediaStorage @Inject constructor(@ApplicationContext private val co
                 if (changed != 1) throw Errors.exception(ErrorCode.PERMISSION)
                 created
             } else {
-                DocumentsContract.renameDocument(resolver, created, safeName) ?: throw Errors.exception(ErrorCode.PERMISSION)
+                try { DocumentsContract.renameDocument(resolver, created, safeName) ?: throw Errors.exception(ErrorCode.PERMISSION) }
+                catch (error: UnsupportedOperationException) { throw Errors.exception(ErrorCode.PERMISSION, error) }
             }
             pending = published
             withContext(NonCancellable) { onPending(published.toString()) }
@@ -121,11 +123,13 @@ class AndroidMediaStorage @Inject constructor(@ApplicationContext private val co
     override suspend fun delete(uri: String) = withContext(Dispatchers.IO) {
         val parsed = Uri.parse(uri)
         require(parsed.scheme == "content")
-        if (DocumentsContract.isDocumentUri(context, parsed)) {
-            if (!DocumentsContract.deleteDocument(resolver, parsed) && exists(uri)) throw Errors.exception(ErrorCode.PERMISSION)
-        } else {
-            if (resolver.delete(parsed, null, null) == 0 && exists(uri)) throw Errors.exception(ErrorCode.PERMISSION)
-        }
+        try {
+            if (DocumentsContract.isDocumentUri(context, parsed)) {
+                if (!DocumentsContract.deleteDocument(resolver, parsed) && exists(uri)) throw Errors.exception(ErrorCode.PERMISSION)
+            } else {
+                if (resolver.delete(parsed, null, null) == 0 && exists(uri)) throw Errors.exception(ErrorCode.PERMISSION)
+            }
+        } catch (_: FileNotFoundException) { /* Already deleted outside Vidbox. */ }
         Unit
     }
 }

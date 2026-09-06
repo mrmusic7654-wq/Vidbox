@@ -17,7 +17,8 @@ data class NetworkStatus(
     val wifi: Boolean = false,
     val cellular: Boolean = false,
     val metered: Boolean = true,
+    val blocked: Boolean = false,
 ) {
-    fun permits(settings: AppSettings): Boolean = connected &&
+    fun permits(settings: AppSettings): Boolean = connected && !blocked &&
         (!settings.wifiOnly || (wifi && !metered))
 }

@@ -34,6 +34,7 @@ fun DownloadDetails(record: DownloadRecord, onDismiss: () -> Unit) {
                     record.startedAt?.let { DetailLine("Started", dateLabel(it)) }
                     record.completedAt?.let { DetailLine("Finished", dateLabel(it)) }
                     DetailLine("Attempts", record.attempt.toString())
+                    DetailLine("Resume support", if (record.resumeSupported) "Can continue when supported by the source" else "Server has not provided stable range validators; interruptions restart safely")
                     record.outputUri?.let { DetailLine("Saved location", it) }
                     DetailLine("Download ID", record.id)
                 }

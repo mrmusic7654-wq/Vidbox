@@ -34,7 +34,7 @@ class RoomDownloadRepositoryTest {
         assertTrue(repository.transition(id, setOf(DownloadState.DOWNLOADING), DownloadState.PAUSED, PauseReason.USER))
         repository.progress(id, DownloadProgress(DownloadState.DOWNLOADING, 400, 500))
         assertEquals(DownloadState.PAUSED, repository.get(id)!!.state)
-        assertEquals(100, repository.get(id)!!.downloadedBytes)
+        assertEquals(100L, repository.get(id)!!.downloadedBytes)
     }
     @Test fun cancellationCannotBeOverwrittenByCompletion() = runBlocking {
         val id = repository.enqueue(testSpec())

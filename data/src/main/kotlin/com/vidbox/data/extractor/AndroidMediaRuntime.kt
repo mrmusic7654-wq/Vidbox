@@ -1,6 +1,7 @@
 package com.vidbox.data.extractor
 
 import android.content.Context
+import com.vidbox.data.BuildConfig
 import com.vidbox.domain.model.ErrorCode
 import com.vidbox.domain.model.Errors
 import com.yausername.ffmpeg.FFmpeg
@@ -27,7 +28,18 @@ class AndroidMediaRuntime @Inject constructor(@ApplicationContext private val co
     suspend fun environment(tool: Tool): Environment = withContext(Dispatchers.IO) {
         initialization.withLock {
             try {
-                if (!pythonReady) { YoutubeDL.init(context); pythonReady = true }
+                if (!pythonReady) {
+                    val base = File(context.noBackupFilesDir, "youtubedl-android")
+                    val marker = File(base, "bundled-runtime.version")
+                    if (runCatching { marker.readText() }.getOrNull() != BuildConfig.MEDIA_RUNTIME_VERSION) {
+                        // The upstream initializer only copies a missing zipapp; explicitly adopt engine updates with each bundled release.
+                        val script = File(base, "yt-dlp/yt-dlp")
+                        if (script.exists() && !script.delete()) throw Errors.exception(ErrorCode.ENGINE)
+                    }
+                    YoutubeDL.init(context)
+                    marker.writeText(BuildConfig.MEDIA_RUNTIME_VERSION)
+                    pythonReady = true
+                }
                 if (tool == Tool.FFMPEG && !ffmpegReady) { FFmpeg.init(context); ffmpegReady = true }
             } catch (error: Exception) {
                 throw Errors.exception(ErrorCode.ENGINE, error)

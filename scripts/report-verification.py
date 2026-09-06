@@ -21,3 +21,22 @@ if os.environ.get('GITHUB_ACTIONS'):
             errors += int(root.get('errors', 0))
             skipped += int(root.get('skipped', 0))
         print(f'::notice title=Verification::Gradle succeeded. JUnit cases={tests}, failures={failures}, errors={errors}, skipped={skipped}.')
+
+    for report in glob.glob('**/build/**/TEST-*.xml', recursive=True):
+        try:
+            root = ET.parse(report).getroot()
+            for case in root.iter('testcase'):
+                for failure in list(case.findall('failure')) + list(case.findall('error')):
+                    detail = (case.get('name', '') + '\n' + (failure.text or failure.get('message', '')))[:12000]
+                    detail = detail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                    print(f'::error title=Test failure::{detail}')
+        except (ET.ParseError, OSError):
+            pass
+
+    # Keep the generated Room identity hash auditable, even where artifact blob downloads are unavailable.
+    import base64
+    for path in glob.glob('data/schemas/**/*.json', recursive=True):
+        with open(path, 'rb') as schema:
+            encoded = base64.b64encode(schema.read()).decode('ascii')
+        if len(encoded) < 60000:
+            print(f'::notice title=Room schema::{path}|{encoded}')

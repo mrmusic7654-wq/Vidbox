@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Only the instrumentation APK serves HTTP fixtures on device loopback. The production app requires HTTPS. -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>

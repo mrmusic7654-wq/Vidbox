@@ -12,7 +12,9 @@ android {
         minSdk = 29
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "MEDIA_RUNTIME_VERSION", "\"${libs.versions.ytdlp.get()}\"")
     }
+    buildFeatures { buildConfig = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -57,4 +59,6 @@ dependencies {
     androidTestImplementation(libs.android.test.runner)
     androidTestImplementation(libs.coroutines.test)
     androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.okhttp.mock)
+    androidTestImplementation(libs.okhttp.tls)
 }

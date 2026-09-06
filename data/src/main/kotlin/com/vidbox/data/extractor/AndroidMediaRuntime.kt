@@ -7,7 +7,8 @@ import com.vidbox.domain.model.Errors
 import com.vidbox.domain.model.DownloadException
 import com.vidbox.domain.util.ErrorMapper
 import com.vidbox.data.storage.WorkFiles
-import java.util.zip.ZipFile
+import org.apache.commons.compress.archivers.zip.ZipFile
+import android.system.Os
 import com.yausername.youtubedl_android.YoutubeDL
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -79,19 +80,33 @@ class AndroidMediaRuntime @Inject constructor(@param:ApplicationContext private 
         if (directory.exists() && !directory.deleteRecursively()) throw Errors.exception(ErrorCode.PERMISSION)
         if (!directory.mkdirs()) throw Errors.exception(ErrorCode.LOW_STORAGE)
         try {
-            ZipFile(archive).use { zip ->
-                val size = zip.entries().asSequence().filterNot { it.isDirectory }.sumOf { it.size.coerceAtLeast(0) }
+            ZipFile.builder().setFile(archive).get().use { zip ->
+                val size = zip.entries.asSequence().filterNot { it.isDirectory }.sumOf { it.size.coerceAtLeast(0) }
                 WorkFiles.requireSpace(directory, size)
                 val root = directory.canonicalFile
-                zip.entries().asSequence().forEach { entry ->
+                val links = mutableListOf<Pair<File, String>>()
+                zip.entries.asSequence().forEach { entry ->
                     val output = File(directory, entry.name).canonicalFile
                     if (!output.path.startsWith(root.path + File.separator)) throw Errors.exception(ErrorCode.ENGINE)
-                    if (entry.isDirectory) {
+                    if (entry.isUnixSymlink) {
+                        val target = zip.getUnixSymlink(entry)
+                        if (target.isNullOrBlank() || File(target).isAbsolute) throw Errors.exception(ErrorCode.ENGINE)
+                        val resolved = File(output.parentFile, target).canonicalFile
+                        if (!resolved.path.startsWith(root.path + File.separator)) throw Errors.exception(ErrorCode.ENGINE)
+                        links += output to target
+                    } else if (entry.isDirectory) {
                         if (!output.isDirectory && !output.mkdirs()) throw Errors.exception(ErrorCode.PERMISSION)
                     } else {
                         output.parentFile?.mkdirs()
                         zip.getInputStream(entry).use { input -> output.outputStream().use { input.copyTo(it, 65536) } }
                     }
+                }
+                // The upstream archive uses SONAME symlinks (for example libavcodec.so -> its versioned ELF).
+                // Materializing the link text as a file would break the Android linker.
+                links.forEach { (output, target) ->
+                    val resolved = File(output.parentFile, target).canonicalFile
+                    if (!resolved.path.startsWith(root.path + File.separator)) throw Errors.exception(ErrorCode.ENGINE)
+                    Os.symlink(target, output.path)
                 }
             }
             marker.writeText(version)

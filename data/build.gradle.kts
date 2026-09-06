@@ -119,6 +119,7 @@ dependencies {
     implementation(libs.datastore)
     implementation(libs.documentfile)
     implementation(libs.okhttp)
+    implementation("org.apache.commons:commons-compress:1.27.1")
     implementation(libs.ytdlp)
     add(upstreamFfmpeg.name, libs.ffmpeg)
     constraints {

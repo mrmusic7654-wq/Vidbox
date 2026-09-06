@@ -112,7 +112,7 @@ class CompositeVideoExtractor @Inject constructor(
     }
 
     /** Media hints in document order: Open Graph, Twitter player, then real <video>/<source> elements. */
-    private fun scanCandidates(html: String): List<String> {
+    private fun scanCandidates(html: CharSequence): List<String> {
         val links = linkedSetOf<String>()
         val meta = Regex("<meta\\b[^>]*>", RegexOption.IGNORE_CASE)
         meta.findAll(html).forEach { match ->

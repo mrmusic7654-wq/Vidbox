@@ -33,11 +33,17 @@ if not apks:
 for apk_path in apks:
     with zipfile.ZipFile(apk_path) as apk:
         names = set(apk.namelist())
-        for abi in ('arm64-v8a', 'x86_64'):
-            for library in ('libpython.so', 'libpython.zip.so', 'libffmpeg.so', 'libffmpeg.zip.so', 'libqjs.so'):
-                path = f'lib/{abi}/{library}'
-                if path not in names:
-                    failures.append(f'{apk_path}: missing {path}')
+        # Universal and split APKs are both valid inputs: validate every ABI the APK carries.
+        abis = sorted({name.split('/')[1] for name in names
+                       if name.startswith('lib/') and name.count('/') == 2 and name.endswith('.so')})
+        if abis:
+            for abi in abis:
+                for library in ('libpython.so', 'libpython.zip.so', 'libffmpeg.so', 'libffmpeg.zip.so', 'libqjs.so'):
+                    path = f'lib/{abi}/{library}'
+                    if path not in names:
+                        failures.append(f'{apk_path}: missing {path}')
+        else:
+            failures.append(f'{apk_path}: contains no native ABIs')
         for entry in apk.infolist():
             if entry.filename.startswith('lib/') and entry.filename.endswith('.so'):
                 payload = apk.read(entry)

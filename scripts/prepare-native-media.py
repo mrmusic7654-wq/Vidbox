@@ -11,7 +11,8 @@ import tarfile
 import urllib.request
 import zipfile
 
-ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86_64')
+# Must stay aligned with the ABIs the app actually packages (see app ndk.abiFilters).
+ABIS = ('arm64-v8a', 'x86_64')
 LIBRARIES = ('libwebp', 'libwebpdecoder', 'libwebpdemux', 'libwebpmux', 'libsharpyuv')
 TARGETS = ('webp', 'webpdecoder', 'webpdemux', 'libwebpmux', 'sharpyuv')
 
@@ -77,7 +78,9 @@ def main():
                 raise RuntimeError('The Android codec build did not produce all required shared libraries')
             destination = args.output / abi
             destination.mkdir(parents=True, exist_ok=True)
-            for tool in ('libffmpeg.so', 'libffprobe.so'):
+            # libffprobe.so is deliberately not copied: Vidbox only ever execs libffmpeg.so as the
+            # CLI, and shipping an unused second static-linked binary would double the ffmpeg payload.
+            for tool in ('libffmpeg.so',):
                 (destination / tool).write_bytes(upstream.read('jni/' + abi + '/' + tool))
             original = upstream.read('jni/' + abi + '/libffmpeg.zip.so')
             seen = set()

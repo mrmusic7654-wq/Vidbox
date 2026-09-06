@@ -20,7 +20,9 @@ android {
         versionName = "1.0.0"
         buildConfigField("String", "MEDIA_ENGINE_VERSION", "\"${engineLock.getProperty("version")}\"")
         testInstrumentationRunner = "com.vidbox.VidboxTestRunner"
-        ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+        // 64-bit only: minSdk 29 leaves very few 32-bit-only devices, and every dropped ABI removes a
+        // full copy of the FFmpeg/Python/QuickJS runtime payload.
+        ndk { abiFilters += setOf("arm64-v8a", "x86_64") }
     }
     signingConfigs {
         val storePath = providers.environmentVariable("VIDBOX_KEYSTORE").orNull
@@ -42,6 +44,19 @@ android {
             signingConfig = signingConfigs.findByName("production")
         }
     }
+    // Per-ABI release APKs (~58 MB each instead of one 108 MB universal): enable with
+    //   ./gradlew -Pvidbox.apkSplits=true assembleRelease
+    // The flag is opt-in because AGP cannot bundle an AAB while multiple APK outputs exist
+    // (b/402800800: resource shrinking + splits make the pre-bundle artifacts ambiguous), and
+    // because connected tests and the emulator smoke install expect a single universal debug APK.
+    splits {
+        abi {
+            isEnable = providers.gradleProperty("vidbox.apkSplits").isPresent
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = true
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -51,7 +66,11 @@ android {
         jniLibs {
             // Python/FFmpeg/QuickJS executables must exist in nativeLibraryDir on Android 10+.
             useLegacyPackaging = true
-            keepDebugSymbols += "**/*.so"
+            // The *.zip.so entries are ZIP archives that only survive packaging untouched; real ELF
+            // libraries are stripped by the native-strip step instead of shipping debug symbols.
+            keepDebugSymbols += "**/*.zip.so"
+            // ffprobe is never executed by Vidbox (ffmpeg doubles as the CLI); drop its ~15 MB/ABI copy.
+            excludes += setOf("**/libffprobe.so")
         }
         resources.excludes += setOf("META-INF/DEPENDENCIES", "META-INF/AL2.0", "META-INF/LGPL2.1")
     }

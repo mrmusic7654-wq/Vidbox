@@ -36,6 +36,9 @@ Install **JDK 17**, **Python 3.12+** (host build tooling), Android SDK platform 
 ./gradlew assembleDebug
 ./gradlew :domain:test testDebugUnitTest
 ./gradlew assembleRelease bundleRelease lintDebug
+# Optional: additionally emit per-ABI release APKs (~half the size of the universal APK; the flag
+# cannot be combined with bundleRelease in the same invocation, see app/build.gradle.kts):
+./gradlew -Pvidbox.apkSplits=true assembleRelease
 # Connected device or emulator (API 29+, x86_64 or ARM):
 ./gradlew :app:connectedDebugAndroidTest :data:connectedDebugAndroidTest
 python3 scripts/check-native-packaging.py

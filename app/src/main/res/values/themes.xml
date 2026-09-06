@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.Vidbox" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorAccent">#006B63</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#F7F9FA</item>
+    </style>
+    <color name="launcher_background">#0B2428</color>
+</resources>

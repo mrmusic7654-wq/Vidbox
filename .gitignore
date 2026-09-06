@@ -1,3 +1,4 @@
 node_modules/
 *.zip
 FINAL_*.mp4
+video/segments_mirror/

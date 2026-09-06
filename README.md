@@ -28,7 +28,7 @@ Files default to **Movies/Vidbox** (video) or **Music/Vidbox** (audio) using Med
 
 ## Build
 
-Install **JDK 17**, Android SDK platform **36**, and build-tools **36.0.0**. Android Studio can install the SDK; alternatively use `sdkmanager` and set `ANDROID_HOME` or an untracked `local.properties`.
+Install **JDK 17**, **Python 3.12+** (host build tooling), Android SDK platform **36**, build-tools **36.0.0**, NDK **28.2.13676358**, and CMake **3.22.1**. Android Studio can install the SDK; alternatively use `sdkmanager` and set `ANDROID_HOME` or an untracked `local.properties`.
 
 ```sh
 ./gradlew assembleDebug
@@ -39,7 +39,9 @@ Install **JDK 17**, Android SDK platform **36**, and build-tools **36.0.0**. And
 python3 scripts/check-native-packaging.py
 ```
 
-The Gradle wrapper has a pinned distribution SHA-256. Dependencies are centrally versioned in `gradle/libs.versions.toml`. Native packages are resolved from Maven Central. A current, immutable yt-dlp **2026.08.19** zipapp is fetched at build time from its official release and checked against `engine.lock` before being bundled; no untracked executable, user-installed Python, shell package manager, or executable download at first launch is required.
+The build recompiles five WebP libraries from checksum-pinned source with the Android NDK to correct 4 KB-only dependencies inside the upstream FFmpeg package. `native-deps.lock` and `data/src/main/cpp/CMakeLists.txt` describe that reproducible build. Native payloads are generated under `data/build`, not checked into Git.
+
+The Gradle wrapper has a pinned distribution SHA-256. Dependencies are centrally versioned in `gradle/libs.versions.toml`. Native packages are resolved from Maven Central. A current, immutable yt-dlp **2026.08.19** zipapp is fetched at build time from its official release and checked against `engine.lock` before being bundled; no untracked executable, user-installed on-device Python, shell package manager, or executable download at first launch is required.
 
 ### APKs and CI
 

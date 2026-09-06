@@ -87,7 +87,7 @@ class NativePipelineTest {
             "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-f", "dash", File(fixtures, "manifest.mpd").path), id)
         runner.run(AndroidMediaRuntime.Tool.FFMPEG, listOf("-nostdin", "-hide_banner", "-loglevel", "error", "-y",
             "-i", File(fixtures, "video.mp4").path, "-i", File(fixtures, "audio.m4a").path,
-            "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-hls_time", "1", "-hls_list_size", "0", "-f", "hls",
+            "-map", "0:v:0", "-map", "1:a:0", "-c", "copy", "-bsf:v", "dump_extra", "-hls_time", "1", "-hls_list_size", "0", "-f", "hls",
             File(fixtures, "playlist.m3u8").path), id)
     }
 
@@ -149,7 +149,9 @@ class NativePipelineTest {
                 val spec = DownloadSpec(media.url, "Licensed HLS fixture", null, media.source, null, selection, false, null)
                 val downloader = HybridDownloader(HttpRangeDownloader(http, json), runner, FfmpegMediaProcessor(runner), files, logger)
                 val stages = mutableListOf<DownloadState>()
-                val result = downloader.download(DownloadRecord(id, spec, "fixture.mp4", state = DownloadState.EXTRACTING, createdAt = 0)) { stages += it.state }
+                val result = try {
+                    downloader.download(DownloadRecord(id, spec, "fixture.mp4", state = DownloadState.EXTRACTING, createdAt = 0)) { stages += it.state }
+                } catch (error: Exception) { throw AssertionError("HLS fixture events: $events", error) }
                 assertTrue(stages.contains(DownloadState.PROCESSING))
                 val header = File(result.path).inputStream().use { input -> ByteArray(12).also { input.read(it) } }
                 assertEquals("ftyp", String(header, 4, 4, Charsets.US_ASCII))

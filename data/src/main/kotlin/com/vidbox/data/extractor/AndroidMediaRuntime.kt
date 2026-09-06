@@ -6,7 +6,8 @@ import com.vidbox.domain.model.ErrorCode
 import com.vidbox.domain.model.Errors
 import com.vidbox.domain.model.DownloadException
 import com.vidbox.domain.util.ErrorMapper
-import com.yausername.ffmpeg.FFmpeg
+import com.vidbox.data.storage.WorkFiles
+import java.util.zip.ZipFile
 import com.yausername.youtubedl_android.YoutubeDL
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +44,7 @@ class AndroidMediaRuntime @Inject constructor(@param:ApplicationContext private 
                     marker.writeText(packagedVersion)
                     pythonReady = true
                 }
-                if (tool == Tool.FFMPEG && !ffmpegReady) { FFmpeg.init(context); ffmpegReady = true }
+                if (tool == Tool.FFMPEG && !ffmpegReady) { initializeFfmpeg(); ffmpegReady = true }
             } catch (error: Exception) {
                 val storageFailure = generateSequence<Throwable>(error) { it.cause }.take(8).map(ErrorMapper::from)
                     .firstOrNull { it.code in setOf(ErrorCode.LOW_STORAGE, ErrorCode.PERMISSION) }
@@ -68,4 +69,36 @@ class AndroidMediaRuntime @Inject constructor(@param:ApplicationContext private 
             "PATH" to "${System.getenv("PATH")}:$native",
         ))
     }
+    private fun initializeFfmpeg() {
+        val archive = File(context.applicationInfo.nativeLibraryDir, "libffmpeg.zip.so")
+        if (!archive.isFile) throw Errors.exception(ErrorCode.ENGINE)
+        val directory = File(context.noBackupFilesDir, "youtubedl-android/packages/ffmpeg")
+        val marker = File(directory, ".vidbox-package")
+        val version = "${BuildConfig.MEDIA_RUNTIME_VERSION}:${BuildConfig.NATIVE_PACKAGE_VERSION}:${archive.length()}"
+        if (runCatching { marker.readText() }.getOrNull() == version) return
+        if (directory.exists() && !directory.deleteRecursively()) throw Errors.exception(ErrorCode.PERMISSION)
+        if (!directory.mkdirs()) throw Errors.exception(ErrorCode.LOW_STORAGE)
+        try {
+            ZipFile(archive).use { zip ->
+                val size = zip.entries().asSequence().filterNot { it.isDirectory }.sumOf { it.size.coerceAtLeast(0) }
+                WorkFiles.requireSpace(directory, size)
+                val root = directory.canonicalFile
+                zip.entries().asSequence().forEach { entry ->
+                    val output = File(directory, entry.name).canonicalFile
+                    if (!output.path.startsWith(root.path + File.separator)) throw Errors.exception(ErrorCode.ENGINE)
+                    if (entry.isDirectory) {
+                        if (!output.isDirectory && !output.mkdirs()) throw Errors.exception(ErrorCode.PERMISSION)
+                    } else {
+                        output.parentFile?.mkdirs()
+                        zip.getInputStream(entry).use { input -> output.outputStream().use { input.copyTo(it, 65536) } }
+                    }
+                }
+            }
+            marker.writeText(version)
+        } catch (error: Exception) {
+            directory.deleteRecursively()
+            throw error
+        }
+    }
+
 }

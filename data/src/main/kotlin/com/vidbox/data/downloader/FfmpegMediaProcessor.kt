@@ -34,7 +34,8 @@ class FfmpegMediaProcessor @Inject constructor(private val runner: NativeProcess
         WorkFiles.requireSpace(output.parentFile!!, inputs.sumOf { it.length() })
         val partial = File(output.parentFile, "processed.part.$container")
         val args = mutableListOf("-nostdin", "-hide_banner", "-loglevel", "error", "-y")
-        inputs.forEach { args += listOf("-i", it.path) }
+        inputs.forEach { args += listOf("-protocol_whitelist", "file,pipe",
+            "-format_whitelist", "mov,matroska,webm,mpegts,mp3,aac,ogg,wav,flac,avi,flv", "-i", it.path) }
         args += maps
         args += listOf("-c", "copy")
         if (container in setOf("mp4", "m4a", "mov", "m4v")) args += listOf("-movflags", "+faststart")

@@ -1,0 +1,8 @@
+# Source used to replace the five 4 KB-aligned WebP libraries in the upstream FFmpeg archive.
+webp.version=1.6.0
+webp.commit=4fa21912338357f89e4fd51cf2368325b59e9bd9
+webp.url=https://codeload.github.com/webmproject/libwebp/tar.gz/refs/tags/v1.6.0
+webp.sha256=93a852c2b3efafee3723efd4636de855b46f9fe1efddd607e1f42f60fc8f2136
+ndk.version=28.2.13676358
+cmake.version=3.22.1
+package.revision=1

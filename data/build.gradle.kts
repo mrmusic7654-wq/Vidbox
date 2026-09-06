@@ -52,6 +52,34 @@ val prepareBundledEngine by tasks.registering {
     }
 }
 
+val nativeLock = Properties().apply {
+    rootProject.file("native-deps.lock").inputStream().use { load(it) }
+}
+val upstreamFfmpeg by configurations.creating {
+    isCanBeConsumed = false
+    isTransitive = false
+}
+val nativeResourceDirectory = layout.buildDirectory.dir("generated/nativeMedia/jniLibs")
+val prepareNativeMedia by tasks.registering(Exec::class) {
+    inputs.files(upstreamFfmpeg)
+    inputs.files(rootProject.file("native-deps.lock"), rootProject.file("scripts/prepare-native-media.py"), file("src/main/cpp/CMakeLists.txt"))
+    outputs.dir(nativeResourceDirectory)
+    outputs.cacheIf { true }
+    workingDir(rootProject.projectDir)
+    doFirst {
+        val local = Properties().apply {
+            rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+        }
+        val sdk = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT") ?: local.getProperty("sdk.dir")
+            ?: error("Set ANDROID_HOME or sdk.dir in local.properties")
+        commandLine(if (System.getProperty("os.name").startsWith("Windows")) "python" else "python3",
+            rootProject.file("scripts/prepare-native-media.py").absolutePath,
+            "--root", rootProject.projectDir.absolutePath, "--aar", upstreamFfmpeg.singleFile.absolutePath,
+            "--work", layout.buildDirectory.dir("nativeMediaWork").get().asFile.absolutePath,
+            "--output", nativeResourceDirectory.get().asFile.absolutePath, "--sdk", sdk)
+    }
+}
+
 android {
     namespace = "com.vidbox.data"
     compileSdk = 36
@@ -61,6 +89,7 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         buildConfigField("String", "MEDIA_RUNTIME_VERSION", "\"${libs.versions.ytdlp.get()}\"")
         buildConfigField("String", "MEDIA_ENGINE_VERSION", "\"$engineVersion\"")
+        buildConfigField("String", "NATIVE_PACKAGE_VERSION", "\"${nativeLock.getProperty("webp.version")}:${nativeLock.getProperty("package.revision")}\"")
     }
     buildFeatures { buildConfig = true }
     compileOptions {
@@ -72,8 +101,9 @@ android {
     sourceSets["androidTest"].assets.srcDir("$projectDir/schemas")
     // Higher-priority app/library resources override the AAR's older bundled raw/ytdlp zipapp.
     sourceSets["main"].res.srcDir(engineResourceDirectory)
+    sourceSets["main"].jniLibs.srcDir(nativeResourceDirectory)
 }
-tasks.named("preBuild") { dependsOn(prepareBundledEngine) }
+tasks.named("preBuild") { dependsOn(prepareBundledEngine, prepareNativeMedia) }
 kotlin { jvmToolchain(17) }
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 dependencies {
@@ -90,7 +120,7 @@ dependencies {
     implementation(libs.documentfile)
     implementation(libs.okhttp)
     implementation(libs.ytdlp)
-    implementation(libs.ffmpeg)
+    add(upstreamFfmpeg.name, libs.ffmpeg)
     constraints {
         implementation("commons-io:commons-io:2.19.0")
         implementation("org.apache.commons:commons-compress:1.27.1")

@@ -29,6 +29,11 @@ class HybridDownloader @Inject constructor(
             val selection = spec.selection
             val dir = files.directory(record.id)
             WorkFiles.requireSpace(dir)
+            if (spec.kind == DownloadKind.FILE) {
+                val ext = selection.container
+                val file = direct.transfer(spec.url, File(dir, "original.$ext"), onProgress)
+                return@withContext StagedMedia(file.path, spec.mimeType ?: FileNames.mime(ext, false), file.length())
+            }
             if (spec.isDirect) {
                 val file = direct.transfer(spec.url, File(dir, "original.${selection.primary.extension}"), onProgress)
                 return@withContext finishSingle(file, record, onProgress)
@@ -83,7 +88,11 @@ class HybridDownloader @Inject constructor(
             count == head.size && head[0] == 0x47.toByte() && head[188] == 0x47.toByte() && head[376] == 0x47.toByte()
         }
         val hls = selected.primary.protocol?.contains("m3u8") == true
-        if (selected.container != "ts" && (hls || transportStream)) {
+        // A single stream requested in a different container (e.g. WebM source saved as MP4) is
+        // remuxed with stream copy; codec compatibility was checked when the option was offered.
+        val containerChange = selected.container != selected.primary.extension &&
+            selected.container in setOf("mp4", "webm", "mkv")
+        if (selected.container != "ts" && (hls || transportStream || containerChange)) {
             onProgress(DownloadProgress(DownloadState.PROCESSING, file.length(), file.length()))
             logger.event("processing.started", record.id, mapOf("operation" to "remux"))
             return processor.remux(file.path, File(file.parentFile, "media.${selected.container}").path, selected.container, selected.primary.hasVideo)

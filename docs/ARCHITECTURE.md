@@ -8,6 +8,8 @@
 
 `HomeViewModel → DownloadActions → RoomDownloadRepository → ForegroundDownloadScheduler`
 
+`BrowserViewModel → WebView (HTTPS, JS + DOM storage) → DownloadActions → same queue → storage`
+
 `DownloadService → DownloadQueue → HybridDownloader → HttpRangeDownloader / NativeProcessRunner → FfmpegMediaProcessor (only for merges) → AndroidMediaStorage → Room completion transaction`
 
 ## Android-native engine packaging
@@ -48,7 +50,9 @@ A `.part` file is associated with a small resume journal. Resume requires a stab
 
 Staging is in `noBackupFilesDir/transfers/<validated UUID>`, not a purgeable thumbnail cache. Names are Unicode-normalized, stripped of controls/traversal characters, bounded in UTF-8 bytes, and suffixed with the task ID. Extensions and yt-dlp format IDs are allowlisted.
 
-MediaStore inserts an owned `IS_PENDING=1` Video/Audio row with an appropriate relative folder. The pending URI is recorded before copying. After a successful streaming copy and sync, the item is made public, then committed as completed in Room. Cancellation/failure removes pending output; interrupted publications are deleted/retried on recovery instead of producing duplicate visible files. A cancelled row cannot win a completion race; a newly published file is removed if completion loses its compare-and-set.
+MediaStore inserts an owned `IS_PENDING=1` Video/Audio row with an appropriate relative folder (Movies/Vidbox, Music/Vidbox, or Downloads/Vidbox for generic browser files). The pending URI is recorded before copying. After a successful streaming copy and sync, the item is made public, then committed as completed in Room. Cancellation/failure removes pending output; interrupted publications are deleted/retried on recovery instead of producing duplicate visible files. A cancelled row cannot win a completion race; a newly published file is removed if completion loses its compare-and-set.
+
+`FormatPlanner` offers video only as MP4 and emits one option per actually reported quality (resolution + frame-rate bucket). Formats whose resolution is unknown are hidden when any labeled quality exists, and codec-unknown containers are offered as MP4 only when stream copy is safe (MP4-family or transport streams); everything else is honestly unavailable rather than labelled unknown.
 
 SAF stores a persistable directory grant and creates a uniquely named temporary document. It streams the file and renames it only on success; a provider that cannot rename is rejected with a folder error. Documents providers are not a shared transaction participant: a provider dying precisely between a successful rename and its new URI being journaled can leave an orphan that requires user cleanup. MediaStore/SAF permission revocation, removable storage, cloud-provider errors and missing files are treated as user-visible errors, never broad-storage permission requests.
 

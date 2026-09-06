@@ -8,19 +8,21 @@ An Android video and audio downloader built with Kotlin, Compose and Material 3.
 
 ## Use
 
-1. Paste or share a supported **HTTPS** video link into Vidbox.
-2. Tap **Analyze link**. Results come from a direct-media HTTP probe or the bundled yt-dlp engine, not a fixed list of sample formats.
-3. Choose video/audio, quality, and an available container. Separate audio/video options are clearly marked.
-4. Tap **Download media**. Manage the actual queue in Downloads or its foreground notifications.
-5. Completed media appears in Library. Open, share, search, sort, inspect, or delete it there.
+1. Browse in the app's **Browser** tab (HTTPS pages only), or paste/share a supported **HTTPS** video link.
+2. On a video page tap **Download from this page**; direct links to media or files (`.mp4`, `.pdf`, `.zip`, …) ask once and go straight to the queue.
+3. Tap **Analyze link** for pasted links. Results come from a direct-media HTTP probe or the bundled yt-dlp engine, not a fixed list of sample formats.
+4. Video is offered **only as MP4**, one option per quality the source actually reports — no invented or "unknown" qualities. Separate audio/video options are clearly marked.
+5. Tap **Download media**. Manage the actual queue in Downloads or its foreground notifications.
+6. Completed media appears in Library; generic browser files (PDF, archives, images, …) land in **Downloads/Vidbox**. Open, share, search, sort, inspect, or delete them there.
 
 Files default to **Movies/Vidbox** (video) or **Music/Vidbox** (audio) using MediaStore. A folder selected in Settings uses Android's Storage Access Framework. Folder changes apply to new tasks; an in-flight task retains its destination.
 
 ### Supported paths and limits
 
-- Direct HTTPS media: streamed with OkHttp. Stable ETag/Last-Modified validators plus byte ranges enable safe resume. Otherwise interruption restarts the transfer instead of splicing incompatible bytes.
+- **In-app browser** (HTTPS): JavaScript pages, search, download links, and a *Download from this page* action that analyzes the current page. WebView cookies/session state are never exported; yt-dlp still analyzes the page without sign-in or cookies.
+- Direct HTTPS media and generic files (PDF, archives, images, …): streamed with OkHttp and saved under **Downloads/Vidbox**. Stable ETag/Last-Modified validators plus byte ranges enable safe resume. Otherwise interruption restarts the transfer instead of splicing incompatible bytes.
 - Public, non-DRM VOD pages supported by the **bundled yt-dlp release**: native HTTP/fragment downloads; resume is best effort, and expired links/formats can require re-analysis.
-- Separate video/audio: FFmpeg **stream copy**, with container/codec compatibility checked before offering a merge. No re-encoding or fabricated qualities.
+- Separate video/audio: FFmpeg **stream copy**, with container/codec compatibility checked before offering a merge. Video is offered as **MP4 only**, with exactly one option per quality (resolution + frame rate) the source reports; a source that only ships WebM/VP9 is reported as unavailable in MP4 rather than mislabelled. No re-encoding or fabricated qualities.
 - Playlists, live broadcasts, sign-in/cookie import, encrypted credential entry, DRM-protected media, arbitrary command/options input, and transcoding presets are intentionally not supported.
 - A source can reject a request or require verification even if yt-dlp has an extractor for the site. Vidbox reports that; it does not try to defeat the restriction.
 - Notifications require permission on Android 13+. Refusing it does not grant an exemption from foreground-service rules; Android may hide controls from the notification drawer.
@@ -64,8 +66,8 @@ domain/   Pure Kotlin models, contracts, state machine, format planning, use cas
   model/ repository/ usecase/ util/
 data/     Android implementations and bounded, cancellable media I/O
   database/ network/ extractor/ downloader/ storage/ repository/ di/
-app/      Compose screens, ViewModels, foreground service, notifications and recovery
-  presentation/{home,formats,downloads,history,settings,components,theme}/
+app/      Compose screens, ViewModels, WebView browser, foreground service and notifications
+  presentation/{home,browser,formats,downloads,history,settings,components,theme}/
   service/ worker/ di/ util/
 ```
 

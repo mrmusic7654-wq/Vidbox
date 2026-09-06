@@ -23,6 +23,8 @@ data class HomeState(
     val video: Boolean = true,
     val container: String? = null,
     val enqueueing: Boolean = false,
+    /** Source has video, but none of it fits MP4 (stream copy only, no re-encoding). */
+    val videoUnavailable: Boolean = false,
 ) {
     val selected get() = options.find { it.key == selectedKey }
     val visibleOptions get() = options.filter { it.primary.hasVideo == video && (container == null || it.container == container) }
@@ -57,7 +59,8 @@ class HomeViewModel @Inject constructor(
                 val video = options.any { it.primary.hasVideo }
                 val selected = planner.default(options, preferences, video)
                 mutableState.update { it.copy(analyzing = false, media = result, options = options,
-                    selectedKey = selected?.key, video = video, container = null) }
+                    selectedKey = selected?.key, video = video, container = null,
+                    videoUnavailable = result.formats.any { it.hasVideo } && !video) }
             } catch (timeout: TimeoutCancellationException) {
                 mutableState.update { it.copy(analyzing = false, error = ErrorMapper.from(timeout).message) }
             } catch (cancel: CancellationException) { throw cancel }
@@ -67,7 +70,7 @@ class HomeViewModel @Inject constructor(
         }
     }
     fun cancelAnalysis() { analysis?.cancel(); mutableState.update { it.copy(analyzing = false) } }
-    fun dismissFormats() { mutableState.update { it.copy(media = null, error = null, options = emptyList(), selectedKey = null) } }
+    fun dismissFormats() { mutableState.update { it.copy(media = null, error = null, options = emptyList(), selectedKey = null, videoUnavailable = false) } }
     fun select(key: String) {
         if (state.value.options.any { it.key == key }) mutableState.update { it.copy(selectedKey = key) }
     }

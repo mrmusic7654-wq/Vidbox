@@ -69,9 +69,18 @@ class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private 
 
     private fun createMediaStore(name: String, mime: String): Uri {
         val video = mime.startsWith("video/")
-        val collection = if (video) MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            else MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        val folder = if (video) Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_MUSIC
+        val audio = !video && mime.startsWith("audio/")
+        // Generic browser files (PDF, archives, images, …) belong in Downloads, not Music.
+        val collection = when {
+            video -> MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            audio -> MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            else -> MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        }
+        val folder = when {
+            video -> Environment.DIRECTORY_MOVIES
+            audio -> Environment.DIRECTORY_MUSIC
+            else -> Environment.DIRECTORY_DOWNLOADS
+        }
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, mime)

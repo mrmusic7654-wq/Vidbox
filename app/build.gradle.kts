@@ -20,7 +20,9 @@ android {
         versionName = "1.0.0"
         buildConfigField("String", "MEDIA_ENGINE_VERSION", "\"${engineLock.getProperty("version")}\"")
         testInstrumentationRunner = "com.vidbox.VidboxTestRunner"
-        ndk { abiFilters += setOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+        // 64-bit only: minSdk 29 leaves very few 32-bit-only devices, and every dropped ABI removes a
+        // full copy of the FFmpeg/Python/QuickJS runtime payload.
+        ndk { abiFilters += setOf("arm64-v8a", "x86_64") }
     }
     signingConfigs {
         val storePath = providers.environmentVariable("VIDBOX_KEYSTORE").orNull
@@ -51,7 +53,11 @@ android {
         jniLibs {
             // Python/FFmpeg/QuickJS executables must exist in nativeLibraryDir on Android 10+.
             useLegacyPackaging = true
-            keepDebugSymbols += "**/*.so"
+            // The *.zip.so entries are ZIP archives that only survive packaging untouched; real ELF
+            // libraries are stripped by the native-strip step instead of shipping debug symbols.
+            keepDebugSymbols += "**/*.zip.so"
+            // ffprobe is never executed by Vidbox (ffmpeg doubles as the CLI); drop its ~15 MB/ABI copy.
+            excludes += setOf("**/libffprobe.so")
         }
         resources.excludes += setOf("META-INF/DEPENDENCIES", "META-INF/AL2.0", "META-INF/LGPL2.1")
     }

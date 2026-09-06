@@ -31,7 +31,9 @@ jobs:
         if: ${{ !cancelled() }}
         run: ./scripts/verify-gradle.sh assembleDebug assembleRelease bundleRelease lintDebug
       - name: Verify packaged native runtime and 16 KB ELF alignment
-        run: python3 scripts/check-native-packaging.py
+        run: python3 scripts/check-native-packaging.py app/build/outputs/apk/debug/*.apk app/build/outputs/apk/release/*.apk
+      - name: Report packaged sizes
+        run: python3 scripts/report-apk-sizes.py || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:

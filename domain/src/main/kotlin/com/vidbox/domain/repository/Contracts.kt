@@ -39,6 +39,7 @@ interface DownloadRepository {
     suspend fun pending(id: String, uri: String?)
     suspend fun complete(id: String, stored: StoredMedia): Boolean
     suspend fun setMissing(id: String, missing: Boolean)
+    suspend fun cleaned(id: String)
     suspend fun removeHistory(id: String)
     suspend fun clearTerminalHistory()
 }

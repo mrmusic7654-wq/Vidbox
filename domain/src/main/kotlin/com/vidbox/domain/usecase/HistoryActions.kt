@@ -3,6 +3,7 @@ package com.vidbox.domain.usecase
 import com.vidbox.domain.model.*
 import com.vidbox.domain.repository.*
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 
 class HistoryActions @Inject constructor(
     private val repository: DownloadRepository,
@@ -25,6 +26,10 @@ class HistoryActions @Inject constructor(
 
     suspend fun clearHistory() {
         // Removing metadata is deliberately separate from deleting the user's media files.
-        repository.clearTerminalHistory()
+        while (true) {
+            val batch = repository.observeHistory(HistoryQuery(limit = 100)).first()
+            if (batch.isEmpty()) break
+            batch.forEach { delete(it.id, deleteFile = false) }
+        }
     }
 }

@@ -45,6 +45,7 @@ data class DownloadRecord(
     val resumeSupported: Boolean = !spec.isDirect,
     val pauseReason: PauseReason? = null,
     val attempt: Int = 0,
+    val needsCleanup: Boolean = false,
 ) {
     val percent: Float? get() = totalBytes?.takeIf { it > 0 }?.let {
         (downloadedBytes.toDouble() / it * 100).toFloat().coerceIn(0f, 100f)

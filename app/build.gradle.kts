@@ -79,6 +79,7 @@ dependencies {
     implementation(libs.hilt.compose)
     ksp(libs.hilt.compiler)
     implementation(libs.work)
+    implementation(libs.webkit)
     implementation(libs.hilt.work)
     ksp(libs.hilt.work.compiler)
     implementation(libs.coil)

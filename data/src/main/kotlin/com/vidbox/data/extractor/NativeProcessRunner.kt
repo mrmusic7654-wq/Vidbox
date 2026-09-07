@@ -5,6 +5,7 @@ import android.system.OsConstants
 import com.vidbox.domain.model.ErrorCode
 import com.vidbox.domain.model.Errors
 import com.vidbox.domain.model.DownloadException
+import com.vidbox.data.network.ProxyManager
 import com.vidbox.domain.repository.EventLogger
 import com.vidbox.domain.util.ErrorMapper
 import kotlinx.coroutines.*
@@ -21,14 +22,18 @@ import javax.inject.Singleton
 class NativeProcessRunner @Inject constructor(
     private val runtime: AndroidMediaRuntime,
     private val logger: EventLogger,
+    private val proxy: ProxyManager? = null,
 ) {
     suspend fun run(tool: AndroidMediaRuntime.Tool, arguments: List<String>, id: String,
         captureJson: Boolean = false, onLine: suspend (String) -> Unit = {}): String = withContext(Dispatchers.IO) {
         coroutineScope {
             val environment = runtime.environment(tool)
+            val proxyUrl = if (tool == AndroidMediaRuntime.Tool.YT_DLP) proxy?.engineProxyUrl() else null
             val args = if (tool == AndroidMediaRuntime.Tool.YT_DLP) {
                 listOf("--ignore-config", "--no-cache-dir", "--no-colors", "--no-playlist",
-                    "--socket-timeout", "25", "--js-runtimes", "quickjs:${environment.quickJs.absolutePath}") + arguments
+                    "--socket-timeout", "25", "--js-runtimes", "quickjs:${environment.quickJs.absolutePath}") +
+                    // The engine performs its own transfers, so the user's proxy is passed explicitly (argv, never logged).
+                    (if (proxyUrl != null) listOf("--proxy", proxyUrl) else emptyList()) + arguments
             } else arguments
             val handshake = UUID.randomUUID().toString()
             val pidPrefix = "VIDBOX_PID:$handshake:"
@@ -75,7 +80,7 @@ class NativeProcessRunner @Inject constructor(
                 val err = stderr.await()
                 currentCoroutineContext().ensureActive()
                 if (exit != 0) {
-                    val mapped = ErrorMapper.engine(err, tool == AndroidMediaRuntime.Tool.FFMPEG)
+                    val mapped = ErrorMapper.engine(err, tool == AndroidMediaRuntime.Tool.FFMPEG, viaProxy = proxyUrl != null)
                     logger.event("engine.failed", id, mapOf("code" to mapped.code.name, "exit" to exit.toString()))
                     throw DownloadException(mapped)
                 }

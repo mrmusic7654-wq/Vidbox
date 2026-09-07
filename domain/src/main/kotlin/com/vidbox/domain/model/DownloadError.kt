@@ -1,5 +1,6 @@
 package com.vidbox.domain.model
 
+import com.vidbox.domain.util.DisplayFormat
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -7,12 +8,24 @@ enum class ErrorCode {
     INVALID_URL, UNSUPPORTED_URL, NETWORK, TIMEOUT, REJECTED, UNAVAILABLE, PRIVATE,
     AUTH_REQUIRED, GEO_RESTRICTED, DRM, LIVE, FORMAT_UNAVAILABLE, LOW_STORAGE,
     PERMISSION, PROCESSING, ENGINE, INTERRUPTED, FILE_EXISTS, CORRUPT_PARTIAL, MISSING_FILE, UNKNOWN,
+    PROXY_UNAVAILABLE, PROXY_AUTH,
 }
 
+/**
+ * [detail] carries the specific, user-facing facts of one failure (for example the exact
+ * storage shortfall). It is optional so every stored code still decodes to a complete error.
+ */
 @Serializable
-data class DownloadError(val code: ErrorCode, val message: String, val retryable: Boolean)
+data class DownloadError(val code: ErrorCode, val message: String, val retryable: Boolean, val detail: String? = null) {
+    /** The message plus its per-failure detail, for screens and notifications. */
+    val fullMessage: String get() = if (detail.isNullOrBlank()) message else "$message\n$detail"
+}
 
 class DownloadException(val error: DownloadError, cause: Throwable? = null) : Exception(error.message, cause)
+
+/** Raised by the network layer when the failing hop is the user's proxy rather than the site. */
+class ProxyUnavailableException(cause: java.io.IOException) :
+    java.io.IOException("Proxy unavailable: ${cause.javaClass.simpleName}", cause)
 
 object Errors {
     fun of(code: ErrorCode): DownloadError = when (code) {
@@ -28,7 +41,7 @@ object Errors {
         ErrorCode.DRM -> DownloadError(code, "This media is DRM-protected. Vidbox cannot download protected media.", false)
         ErrorCode.LIVE -> DownloadError(code, "Live broadcasts are not supported. Try again after the recording is published.", false)
         ErrorCode.FORMAT_UNAVAILABLE -> DownloadError(code, "That format is no longer available. Analyze the link again and choose another quality.", false)
-        ErrorCode.LOW_STORAGE -> DownloadError(code, "There is not enough free storage. Free some space, then retry. Merging and saving need additional temporary space.", true)
+        ErrorCode.LOW_STORAGE -> DownloadError(code, "Not enough storage. Free some space, then retry. Merging and saving need additional temporary space.", true)
         ErrorCode.PERMISSION -> DownloadError(code, "The download folder is not writable. Choose an accessible folder in Settings and analyze the link again.", false)
         ErrorCode.PROCESSING -> DownloadError(code, "The streams could not be merged. Retry, or analyze again and choose another container.", true)
         ErrorCode.ENGINE -> DownloadError(code, "The media engine could not finish. Retry, or install the latest Vidbox release if the source has changed.", true)
@@ -37,6 +50,13 @@ object Errors {
         ErrorCode.CORRUPT_PARTIAL -> DownloadError(code, "The source returned inconsistent file data. Retry to safely restart the download.", true)
         ErrorCode.MISSING_FILE -> DownloadError(code, "The saved file was moved, deleted, or is no longer accessible.", false)
         ErrorCode.UNKNOWN -> DownloadError(code, "Something went wrong. Your other downloads are safe. Please try again.", true)
+        ErrorCode.PROXY_UNAVAILABLE -> DownloadError(code, "The proxy server could not be reached. Check the proxy address and port in Network settings, or turn the proxy off.", true)
+        ErrorCode.PROXY_AUTH -> DownloadError(code, "The proxy server rejected the username or password. Update the credentials in Network settings.", false)
     }
+
+    /** Storage failures always say how much was needed and how much was free. */
+    fun lowStorage(requiredBytes: Long, availableBytes: Long): DownloadError = of(ErrorCode.LOW_STORAGE).copy(
+        detail = "Required: ${DisplayFormat.bytes(requiredBytes)} · Available: ${DisplayFormat.bytes(availableBytes)}")
+
     fun exception(code: ErrorCode, cause: Throwable? = null) = DownloadException(of(code), cause)
 }

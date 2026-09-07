@@ -34,6 +34,7 @@ fun Response.requireSuccess() {
     if (isSuccessful) return
     throw Errors.exception(when (code) {
         401 -> ErrorCode.AUTH_REQUIRED
+        407 -> ErrorCode.PROXY_AUTH
         403, 429 -> ErrorCode.REJECTED
         404, 410 -> ErrorCode.UNAVAILABLE
         408, 504 -> ErrorCode.TIMEOUT

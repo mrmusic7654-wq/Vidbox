@@ -1,7 +1,7 @@
 name: Android verification
 on:
   push:
-    branches: ["arena/01a076e1-vidbox"]
+    branches: ["main", "arena/**"]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -32,6 +32,8 @@ jobs:
         run: ./scripts/verify-gradle.sh assembleDebug assembleRelease bundleRelease lintDebug
       - name: Verify packaged native runtime and 16 KB ELF alignment
         run: python3 scripts/check-native-packaging.py
+      - name: Verify the committed Room schema export matches the compiled entities
+        run: git diff --exit-code -- data/schemas
       - uses: actions/upload-artifact@v4
         if: always()
         with:

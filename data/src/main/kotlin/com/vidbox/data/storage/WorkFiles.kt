@@ -1,6 +1,7 @@
 package com.vidbox.data.storage
 
 import android.content.Context
+import com.vidbox.domain.model.DownloadException
 import com.vidbox.domain.model.ErrorCode
 import com.vidbox.domain.model.Errors
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,9 +28,11 @@ class WorkFiles @Inject constructor(@ApplicationContext context: Context) {
     }
     companion object {
         const val RESERVE_BYTES = 24L * 1024 * 1024
+        /** Fails with the exact shortfall ("Required … Available …") so the user knows what to free. */
         fun requireSpace(directory: File, additionalBytes: Long = 0) {
-            if (directory.usableSpace < additionalBytes.coerceIn(0, Long.MAX_VALUE - RESERVE_BYTES) + RESERVE_BYTES)
-                throw Errors.exception(ErrorCode.LOW_STORAGE)
+            val required = additionalBytes.coerceIn(0, Long.MAX_VALUE - RESERVE_BYTES) + RESERVE_BYTES
+            val available = directory.usableSpace
+            if (available < required) throw DownloadException(Errors.lowStorage(required, available))
         }
     }
 }

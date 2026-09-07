@@ -96,7 +96,7 @@ fun DownloadCard(record: DownloadRecord, callbacks: DownloadCallbacks, compact: 
                 }
             }
             if (record.state == DownloadState.FAILED && !compact) record.error?.let {
-                Text(it.message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                Text(it.fullMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) { StatusPill(record) }

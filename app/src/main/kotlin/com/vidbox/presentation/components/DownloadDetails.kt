@@ -37,7 +37,7 @@ fun DownloadDetails(record: DownloadRecord, onDismiss: () -> Unit, onPlay: (() -
                     val file = record.spec.kind == DownloadKind.FILE
                     DetailLine("Filename", record.fileName)
                     DetailLine("Status", stateLabel(record))
-                    record.error?.let { DetailLine("What happened", it.message) }
+                    record.error?.let { DetailLine("What happened", it.fullMessage) }
                     DetailLine("Source", record.spec.source)
                     DetailLine("Original link", record.spec.url)
                     DetailLine(if (file) "File type" else "Format",

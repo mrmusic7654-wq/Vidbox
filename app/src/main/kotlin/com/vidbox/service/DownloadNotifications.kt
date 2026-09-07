@@ -71,7 +71,7 @@ class DownloadNotifications @Inject constructor(@param:ApplicationContext privat
         val builder = base(RESULT_CHANNEL).setContentTitle(if (record.state == DownloadState.COMPLETED) "Download complete" else "Download needs attention")
             .setContentText(record.fileName).setAutoCancel(true).setStyle(NotificationCompat.BigTextStyle()
                 .bigText(if (record.state == DownloadState.COMPLETED) "${record.fileName}\n${DisplayFormat.bytes(record.totalBytes)} · Saved to your library"
-                    else "${record.fileName}\n${record.error?.message.orEmpty()}"))
+                    else "${record.fileName}\n${record.error?.fullMessage.orEmpty()}"))
         if (record.state == DownloadState.FAILED && record.error?.retryable == true) {
             builder.addAction(0, "Retry", resume(record.id))
         }

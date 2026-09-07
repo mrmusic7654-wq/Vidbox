@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
                 mutableState.update { it.copy(analyzing = false, error = ErrorMapper.from(timeout).message) }
             } catch (cancel: CancellationException) { throw cancel }
             catch (error: Exception) {
-                mutableState.update { it.copy(analyzing = false, error = ErrorMapper.from(error).message) }
+                mutableState.update { it.copy(analyzing = false, error = ErrorMapper.from(error).fullMessage) }
             }
         }
     }
@@ -98,7 +98,7 @@ class HomeViewModel @Inject constructor(
                 eventChannel.send(Unit)
             } catch (cancel: CancellationException) { throw cancel }
             catch (error: Exception) {
-                mutableState.update { it.copy(enqueueing = false, error = ErrorMapper.from(error).message) }
+                mutableState.update { it.copy(enqueueing = false, error = ErrorMapper.from(error).fullMessage) }
             }
         }
     }

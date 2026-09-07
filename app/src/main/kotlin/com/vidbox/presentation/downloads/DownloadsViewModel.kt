@@ -70,7 +70,7 @@ class DownloadsViewModel @Inject constructor(
             try { block() }
             catch (timeout: TimeoutCancellationException) { eventChannel.send(DownloadUiEvent.Message(ErrorMapper.from(timeout).message)) }
             catch (cancel: CancellationException) { throw cancel }
-            catch (error: Exception) { eventChannel.send(DownloadUiEvent.Message(ErrorMapper.from(error).message)) }
+            catch (error: Exception) { eventChannel.send(DownloadUiEvent.Message(ErrorMapper.from(error).fullMessage)) }
         }
     }
 }

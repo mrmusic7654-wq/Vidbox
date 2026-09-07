@@ -29,13 +29,13 @@ fun HistoryScreen(state: HistoryState, query: HistoryQuery, onSearch: (String) -
                     Text("Saved locally. Kept for later.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Box {
-                    IconButton(onClick = { sortMenu = true }) { Icon(Icons.Rounded.Sort, "Sort history") }
+                    IconButton(onClick = { sortMenu = true }) { Icon(VidboxIcons.sort, "Sort history") }
                     DropdownMenu(expanded = sortMenu, onDismissRequest = { sortMenu = false }) {
                         HistorySort.entries.forEach { sort ->
                             DropdownMenuItem(text = { Text(when (sort) {
                                 HistorySort.NEWEST -> "Newest first"; HistorySort.OLDEST -> "Oldest first"
                                 HistorySort.NAME -> "Filename A–Z"; HistorySort.LARGEST -> "Largest first"
-                            }) }, trailingIcon = { if (query.sort == sort) Icon(Icons.Rounded.Check, null) },
+                            }) }, trailingIcon = { if (query.sort == sort) Icon(VidboxIcons.check, null) },
                                 onClick = { onSort(sort); sortMenu = false })
                         }
                     }
@@ -44,8 +44,8 @@ fun HistoryScreen(state: HistoryState, query: HistoryQuery, onSearch: (String) -
         }
         item {
             OutlinedTextField(value = query.text, onValueChange = onSearch, modifier = Modifier.fillMaxWidth().testTag("history_search"), singleLine = true,
-                shape = RoundedCornerShape(14.dp), leadingIcon = { Icon(Icons.Rounded.Search, null) }, placeholder = { Text("Search your downloads") },
-                trailingIcon = { if (query.text.isNotEmpty()) IconButton(onClick = { onSearch("") }) { Icon(Icons.Rounded.Close, "Clear search") } })
+                shape = RoundedCornerShape(14.dp), leadingIcon = { Icon(VidboxIcons.search, null) }, placeholder = { Text("Search your downloads") },
+                trailingIcon = { if (query.text.isNotEmpty()) IconButton(onClick = { onSearch("") }) { Icon(VidboxIcons.cancel, "Clear search") } })
         }
         item {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -59,7 +59,7 @@ fun HistoryScreen(state: HistoryState, query: HistoryQuery, onSearch: (String) -
         if (state.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
         state.error?.let { item { InfoBanner(it, error = true) } }
         if (!state.loading && state.records.isEmpty()) item {
-            EmptyState(Icons.Rounded.VideoLibrary, if (query.text.isNotBlank() || query.filter != HistoryFilter.ALL) "No matching downloads" else "A library of your own",
+            EmptyState(VidboxIcons.library, if (query.text.isNotBlank() || query.filter != HistoryFilter.ALL) "No matching downloads" else "A library of your own",
                 if (query.text.isNotBlank() || query.filter != HistoryFilter.ALL) "Try another search or switch to All." else "Completed downloads will appear here, even after you restart Vidbox.",
                 action = if (query.text.isBlank() && query.filter == HistoryFilter.ALL) "Save your first video" else null, onAction = onAddLink)
         }

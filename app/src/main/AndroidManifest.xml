@@ -39,5 +39,7 @@
             android:authorities="${applicationId}.androidx-startup" android:exported="false" tools:node="merge">
             <meta-data android:name="androidx.work.WorkManagerInitializer" tools:node="remove" />
         </provider>
+        <!-- WebView Safe Browsing stays on for the in-app browser. -->
+        <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing" android:value="true" />
     </application>
 </manifest>

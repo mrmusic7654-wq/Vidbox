@@ -92,7 +92,7 @@ class DownloadService : Service() {
                     val remaining = repository.active()
                     if (rerun || pendingCommands > 0 || lastStartId != ownedStartId || remaining.any {
                             it.state == DownloadState.QUEUED || it.state.isRunning ||
-                                it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI)
+                                (it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI) && preferences.autoResume)
                         }) {
                         yield()
                         continue

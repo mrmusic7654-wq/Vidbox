@@ -12,9 +12,11 @@ import android.provider.OpenableColumns
 import androidx.documentfile.provider.DocumentFile
 import com.vidbox.domain.model.*
 import com.vidbox.domain.repository.MediaStorage
+import com.vidbox.domain.repository.SettingsRepository
 import com.vidbox.domain.util.FileNames
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.Closeable
@@ -24,7 +26,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private val context: Context) : MediaStorage {
+class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private val context: Context,
+    private val settings: SettingsRepository) : MediaStorage {
     private val resolver = context.contentResolver
     override suspend fun publish(id: String, media: StagedMedia, fileName: String, destinationTree: String?,
         onPending: suspend (String?) -> Unit): StoredMedia = withContext(Dispatchers.IO) {
@@ -33,6 +36,12 @@ class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private 
         // Allow a full copy plus reserve for MediaStore (same primary storage). SAF providers report write failures themselves.
         WorkFiles.requireSpace(source.parentFile!!, if (destinationTree == null) source.length() else 0)
         val safeName = FileNames.sanitize(fileName, 220)
+        // "Skip duplicates" refuses the transfer before bytes are copied. The default policy
+        // keeps both: MediaStore and document providers uniquify the new name themselves.
+        if (settings.settings.first().duplicatePolicy == DuplicatePolicy.SKIP) {
+            if (destinationTree == null) requireNoMediaStoreDuplicate(safeName, media.mimeType)
+            else requireNoDocumentDuplicate(destinationTree, safeName)
+        }
         var pending: Uri? = null
         try {
             currentCoroutineContext().ensureActive()
@@ -67,7 +76,8 @@ class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private 
         }
     }
 
-    private fun createMediaStore(name: String, mime: String): Uri {
+    /** MediaStore collection plus the relative path Vidbox writes to for this media kind. */
+    private fun publicFolder(mime: String): Pair<Uri, String> {
         val video = mime.startsWith("video/")
         val audio = !video && mime.startsWith("audio/")
         // Generic browser files (PDF, archives, images, …) belong in Downloads, not Music.
@@ -81,13 +91,37 @@ class AndroidMediaStorage @Inject constructor(@param:ApplicationContext private 
             audio -> Environment.DIRECTORY_MUSIC
             else -> Environment.DIRECTORY_DOWNLOADS
         }
+        return collection to "$folder/Vidbox"
+    }
+
+    private fun createMediaStore(name: String, mime: String): Uri {
+        val (collection, relativePath) = publicFolder(mime)
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, mime)
-            put(MediaStore.MediaColumns.RELATIVE_PATH, "$folder/Vidbox")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
             put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
         return resolver.insert(collection, values) ?: throw Errors.exception(ErrorCode.PERMISSION)
+    }
+
+    /** The provider cannot tell us a pending insert's final name, so a visible name clash refuses the copy. */
+    private fun requireNoMediaStoreDuplicate(name: String, mime: String) {
+        val (collection, relativePath) = publicFolder(mime)
+        val pathClause = "${MediaStore.MediaColumns.RELATIVE_PATH}=? OR ${MediaStore.MediaColumns.RELATIVE_PATH}=?"
+        resolver.query(collection, arrayOf(MediaStore.MediaColumns._ID),
+            "${MediaStore.MediaColumns.DISPLAY_NAME}=? AND ($pathClause) AND ${MediaStore.MediaColumns.IS_PENDING}=0",
+            arrayOf(name, relativePath, "$relativePath/"), null)?.use { cursor ->
+            if (cursor.moveToFirst()) throw Errors.exception(ErrorCode.FILE_EXISTS)
+        }
+    }
+
+    private fun requireNoDocumentDuplicate(tree: String, name: String) {
+        val uri = Uri.parse(tree)
+        require(uri.scheme == "content")
+        val folder = DocumentFile.fromTreeUri(context, uri) ?: return
+        if (folder.findFile(name) != null || folder.findFile(".$name.part") != null)
+            throw Errors.exception(ErrorCode.FILE_EXISTS)
     }
 
     private fun createDocument(tree: String, name: String, mime: String): Uri {

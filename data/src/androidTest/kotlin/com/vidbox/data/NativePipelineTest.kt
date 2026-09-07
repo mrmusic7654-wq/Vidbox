@@ -46,7 +46,10 @@ class NativePipelineTest {
         context = ApplicationProvider.getApplicationContext()
         fixtures = File(context.cacheDir, "licensed-test-${UUID.randomUUID()}").apply { mkdirs() }
         runner = NativeProcessRunner(AndroidMediaRuntime(context), logger)
-        storage = AndroidMediaStorage(context)
+        storage = AndroidMediaStorage(context, object : SettingsRepository {
+            override val settings = MutableStateFlow(AppSettings())
+            override suspend fun update(transform: (AppSettings) -> AppSettings) { settings.value = transform(settings.value) }
+        })
         try { generateFixtures() } catch (error: Exception) {
             // Fixed version-only invocation: diagnostics contain library/bootstrap details, never a user URL.
             val env = AndroidMediaRuntime(context).environment(AndroidMediaRuntime.Tool.FFMPEG)

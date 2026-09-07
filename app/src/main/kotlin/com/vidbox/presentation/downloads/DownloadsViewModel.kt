@@ -23,6 +23,7 @@ class DownloadsViewModel @Inject constructor(
     private val repository: DownloadRepository,
     private val actions: DownloadActions,
     private val history: HistoryActions,
+    private val settings: SettingsRepository,
     network: NetworkMonitor,
 ) : ViewModel() {
     private val eventChannel = Channel<DownloadUiEvent>(Channel.BUFFERED)
@@ -58,8 +59,11 @@ class DownloadsViewModel @Inject constructor(
         }
     }
     fun onForeground() = perform {
+        // Opening the app adopts work the system could not resume itself; with auto-resume
+        // disabled, network-paused transfers wait for an explicit resume action.
+        val prefs = settings.settings.first()
         if (repository.active().any { it.state == DownloadState.QUEUED || it.state.isRunning ||
-                it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI) }) actions.wake()
+                (it.pauseReason in setOf(PauseReason.NETWORK, PauseReason.WIFI) && prefs.autoResume) }) actions.wake()
     }
     private fun perform(block: suspend () -> Unit) {
         viewModelScope.launch {

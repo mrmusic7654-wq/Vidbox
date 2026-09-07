@@ -40,8 +40,8 @@ fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<Down
                     OutlinedTextField(value = state.url, onValueChange = onInput, modifier = Modifier.fillMaxWidth().testTag("home_url"),
                         placeholder = { Text("https://…") }, label = { Text("Video URL") }, singleLine = true,
                         enabled = !state.analyzing, shape = RoundedCornerShape(14.dp),
-                        leadingIcon = { Icon(Icons.Rounded.Link, null) },
-                        trailingIcon = { IconButton(onClick = onPaste, enabled = !state.analyzing) { Icon(Icons.Rounded.ContentPaste, "Paste link") } },
+                        leadingIcon = { Icon(VidboxIcons.link, null) },
+                        trailingIcon = { IconButton(onClick = onPaste, enabled = !state.analyzing) { Icon(VidboxIcons.paste, "Paste link") } },
                         isError = state.error != null, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(onGo = { onAnalyze() }))
                     state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("analysis_error")) }
@@ -55,16 +55,16 @@ fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<Down
                     } else {
                         Button(onClick = onAnalyze, enabled = state.url.isNotBlank(), modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp).testTag("analyze_button"),
                             shape = RoundedCornerShape(14.dp)) {
-                            Icon(Icons.Rounded.ManageSearch, null, Modifier.size(21.dp)); Spacer(Modifier.width(9.dp)); Text("Analyze link")
+                            Icon(VidboxIcons.analyzing, null, Modifier.size(21.dp)); Spacer(Modifier.width(9.dp)); Text("Analyze link")
                         }
                     }
                     Row(verticalAlignment = Alignment.Top) {
-                        Icon(Icons.Rounded.VerifiedUser, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(VidboxIcons.privacy, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("Only save media you own or have permission to download. Secure HTTPS links only.",
                             Modifier.padding(start = 7.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     OutlinedButton(onClick = onBrowse, modifier = Modifier.fillMaxWidth().testTag("home_browse")) {
-                        Icon(Icons.Rounded.Public, null, Modifier.size(19.dp)); Spacer(Modifier.width(8.dp)); Text("Browse websites")
+                        Icon(VidboxIcons.browser, null, Modifier.size(19.dp)); Spacer(Modifier.width(8.dp)); Text("Browse websites")
                     }
                 }
             }
@@ -78,7 +78,7 @@ fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<Down
         val saved = recent.filter { it.state.isTerminal }
         item { SectionHeading("Recently saved", if (saved.isNotEmpty()) "Library" else null, onHistory) }
         if (saved.isEmpty()) item {
-            EmptyState(Icons.Rounded.VideoLibrary, "Make room for your favorites", "Paste a public media link, choose its quality, and save it to your device.",
+            EmptyState(VidboxIcons.library, "Make room for your favorites", "Paste a public media link, choose its quality, and save it to your device.",
                 modifier = Modifier.padding(vertical = 2.dp))
         } else items(saved, key = { "recent_${it.id}" }) { DownloadCard(it, callbacks, compact = true) }
     }

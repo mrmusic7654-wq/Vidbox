@@ -45,11 +45,11 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 private enum class Destination(val label: String, val icon: ImageVector, val tag: String) {
-    HOME("Home", Icons.Rounded.Home, "nav_home"),
-    BROWSER("Browser", Icons.Rounded.Public, "nav_browser"),
-    DOWNLOADS("Downloads", Icons.Rounded.Downloading, "nav_downloads"),
-    HISTORY("Library", Icons.Rounded.VideoLibrary, "nav_history"),
-    SETTINGS("Settings", Icons.Rounded.Tune, "nav_settings"),
+    HOME("Home", VidboxIcons.home, "nav_home"),
+    BROWSER("Browser", VidboxIcons.browser, "nav_browser"),
+    DOWNLOADS("Downloads", VidboxIcons.downloading, "nav_downloads"),
+    HISTORY("Library", VidboxIcons.library, "nav_history"),
+    SETTINGS("Settings", VidboxIcons.settings, "nav_settings"),
 }
 
 private val DragBadge = 58.dp
@@ -136,7 +136,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                             BrandMark(34.dp); Text("Vidbox", style = MaterialTheme.typography.titleLarge)
                         }
                     }, actions = {
-                        if (destination == Destination.HOME) IconButton(onClick = { destination = Destination.SETTINGS }) { Icon(Icons.Rounded.Tune, "Open settings") }
+                        if (destination == Destination.HOME) IconButton(onClick = { destination = Destination.SETTINGS }) { Icon(VidboxIcons.settings, "Open settings") }
                     }, colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
                 },
                 bottomBar = {
@@ -190,7 +190,12 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                         Destination.HISTORY -> HistoryScreen(historyState, query, history::search, history::filter, history::sort, history::more,
                             onAddLink = { destination = Destination.HOME }, callbacks = callbacks)
                         Destination.SETTINGS -> SettingsScreen(preferences, settings::update, onChooseFolder, settings::clearHistory, notificationsAllowed,
-                            onRequestNotifications, onAboutLink = {
+                            onRequestNotifications,
+                            onClearBrowserData = {
+                                com.vidbox.util.BrowsingData.clear(context)
+                                scope.launch { snackbars.showSnackbar("Browser data cleared.") }
+                            },
+                            onAboutLink = {
                                 try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/mrmusic7654-wq/Vidbox"))) }
                                 catch (_: ActivityNotFoundException) { scope.launch { snackbars.showSnackbar("No browser is installed") } }
                             })
@@ -217,7 +222,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary, shadowElevation = 10.dp,
                     modifier = Modifier.size(DragBadge).testTag("drag_download_icon")) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Rounded.Download, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(DragBadgeIcon))
+                        Icon(VidboxIcons.download, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(DragBadgeIcon))
                     }
                 }
             }

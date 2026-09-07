@@ -33,7 +33,7 @@ object Errors {
         ErrorCode.PROCESSING -> DownloadError(code, "The streams could not be merged. Retry, or analyze again and choose another container.", true)
         ErrorCode.ENGINE -> DownloadError(code, "The media engine could not finish. Retry, or install the latest Vidbox release if the source has changed.", true)
         ErrorCode.INTERRUPTED -> DownloadError(code, "Android stopped background work. Open Vidbox and resume to continue safely.", true)
-        ErrorCode.FILE_EXISTS -> DownloadError(code, "A file with this name already exists. Choose another destination and try again.", false)
+        ErrorCode.FILE_EXISTS -> DownloadError(code, "A file with this name is already saved in the destination. Remove or rename it, or set duplicates to “Keep both” in Settings, then retry.", false)
         ErrorCode.CORRUPT_PARTIAL -> DownloadError(code, "The source returned inconsistent file data. Retry to safely restart the download.", true)
         ErrorCode.MISSING_FILE -> DownloadError(code, "The saved file was moved, deleted, or is no longer accessible.", false)
         ErrorCode.UNKNOWN -> DownloadError(code, "Something went wrong. Your other downloads are safe. Please try again.", true)

@@ -26,6 +26,26 @@ Download the [APK/AAB artifact](https://github.com/mrmusic7654-wq/Vidbox/actions
 
 This evidence covers the application code at the revision above. This verification-record update changes documentation only. Earlier failed runs remain in Actions as part of the incremental build history; they are not passing evidence. Emulator and ELF-audit results do not replace the physical-device and distribution checks below.
 
+### Verification of the browser/settings/icon pass (2026-09-06, PR #5)
+
+The same sandbox constraints apply (no local JDK/SDK, no egress to Google/Maven/Gradle hosts), so verification runs through GitHub Actions. The pass was developed incrementally against CI; the failing intermediate runs ([34036513233](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34036513233), [34037548925](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34037548925), [34038161562](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34038161562)) surfaced four compile errors and three test defects that were each fixed in the branch (`ad6143d`, `b587e9b`, `d351f22`).
+
+Final evidence at revision [`d351f22`](https://github.com/mrmusic7654-wq/Vidbox/commit/d351f22beac2a1a4f8aa6d8d4010ee5b4b90e8ce):
+
+[Android verification run 34038769492](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34038769492) (and the identical push-triggered run [34038766631](https://github.com/mrmusic7654-wq/Vidbox/actions/runs/34038766631)) completed successfully on September 6, 2026. Both jobs passed.
+
+| Check | Verified result |
+| --- | --- |
+| `assembleDebug` | Passed; signed debug APK produced |
+| `assembleRelease` / `bundleRelease` | Passed with R8/resource shrinking; unsigned release outputs produced |
+| `lintDebug` | Passed with no errors |
+| JVM tests (`:domain:test`, `testDebugUnitTest`) | 75 tests passed (domain 46, data 29), zero failures/errors/skips |
+| Device tests on API 35 x86_64 | 14 cases passed, zero failures/errors/skips (10 pre-existing + 4 new `BrowserViewModelTest`) |
+| Production application launch | Debug APK installed; real `VidboxApplication`/`MainActivity` launched on the emulator |
+| Native packaging audit | Required executables present; 518 packaged 64-bit ELF payloads verified for 16 KB LOAD alignment |
+
+New automated coverage in this pass: browser address normalization (https-only, search fallback, IDN/punycode, RFC 5987 download filenames, homepage validation), DataStore settings encoding (defaults, clamps, insecure-homepage rejection), queue auto-resume gating, and on-device browser→DownloadManager pipelines (media vs. generic file) against real Room. Release signing credentials were not supplied and no production signing claim is made; the physical-device acceptance checklist below still applies.
+
 ## Automated coverage
 
 - Domain: URL validation, credential/scheme rejection, filename traversal/Unicode safety, format compatibility and defaults, state transitions, progress JSON, error redaction/classification, network policy.

@@ -108,7 +108,9 @@ internal class SettingsEncoding(private val cipher: SecretCipher? = null) {
         prefs[Keys.proxyEnabled] = proxy.enabled && valid
         val username = proxy.username?.take(256).orEmpty()
         val password = proxy.password?.take(256).orEmpty()
-        val encrypted = if (username.isEmpty() || cipher == null) null else runCatching { cipher.encrypt("$username\n$password") }.getOrNull()
+        // `cipher` is a nullable *property*, so it cannot be smart-cast inside the lambda; the safe call
+        // here matches [decodeProxy] and keeps the exact rule: no credentials or no cipher -> nothing stored.
+        val encrypted = if (username.isEmpty()) null else runCatching { cipher?.encrypt("$username\n$password") }.getOrNull()
         if (encrypted == null) prefs.remove(Keys.proxySecret) else prefs[Keys.proxySecret] = encrypted
     }
 

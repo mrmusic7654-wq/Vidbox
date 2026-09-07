@@ -40,7 +40,8 @@ object InfrastructureModule {
     @Provides @Singleton fun database(@ApplicationContext context: Context): VidboxDatabase =
         Room.databaseBuilder(context, VidboxDatabase::class.java, "downloads.db")
             .setJournalMode(androidx.room.RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-            .build() // No destructive migration: future schema versions must provide a migration.
+            .addMigrations(*VidboxDatabase.MIGRATIONS)
+            .build() // No destructive migration: every schema version ships an explicit migration.
     @Provides @Singleton fun json() = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     @Provides fun clock() = TimeProvider(System::currentTimeMillis)
     @Provides @Singleton fun http(): OkHttpClient = OkHttpClient.Builder()

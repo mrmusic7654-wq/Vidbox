@@ -1,7 +1,5 @@
 package com.vidbox.domain.model
 
-import kotlinx.serialization.Serializable
-
 enum class AppTheme { SYSTEM, LIGHT, DARK }
 
 /** What happens when the destination already holds a file with the same name. */
@@ -19,14 +17,33 @@ data class AppSettings(
     /** Reconnect resumes network-paused downloads without asking again. */
     val autoResume: Boolean = true,
     val duplicatePolicy: DuplicatePolicy = DuplicatePolicy.KEEP_BOTH,
-    /** HTTPS homepage for the in-app browser; null uses the built-in default. */
+    /** HTTPS homepage for the in-app browser; null uses the search engine's start page. */
     val browserHomepage: String? = null,
     val browserDesktop: Boolean = false,
     val browserJavaScript: Boolean = true,
     val browserCookies: Boolean = true,
     /** Material You dynamic palettes on Android 12+. */
     val dynamicColors: Boolean = true,
-)
+    // Browser
+    val searchEngineId: String = SearchEngines.DEFAULT.id,
+    /** Template with `%s` when [searchEngineId] is [SearchEngines.CUSTOM_ID]. */
+    val customSearchTemplate: String? = null,
+    val restoreTabs: Boolean = true,
+    val saveBrowsingHistory: Boolean = true,
+    val addressSuggestions: Boolean = true,
+    // Privacy protection
+    val blockAds: Boolean = true,
+    val blockTrackers: Boolean = true,
+    /** Refresh filter lists on Wi-Fi via WorkManager; lists shipped with the app are always available. */
+    val filterListUpdates: Boolean = true,
+    // Network
+    val proxy: ProxyConfig = ProxyConfig(),
+    // Notifications
+    val downloadProgressNotifications: Boolean = true,
+) {
+    val searchEngine: SearchEngine get() = SearchEngines.resolve(searchEngineId, customSearchTemplate)
+    val contentBlockingEnabled: Boolean get() = blockAds || blockTrackers
+}
 
 data class NetworkStatus(
     val connected: Boolean = false,

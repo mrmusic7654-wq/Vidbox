@@ -16,6 +16,7 @@ object ErrorMapper {
      */
     fun from(error: Throwable, viaProxy: Boolean = false): DownloadError = when (error) {
         is DownloadException -> error.error
+        is ProxyUnavailableException -> Errors.of(ErrorCode.PROXY_UNAVAILABLE)
         is SocketTimeoutException, is TimeoutException, is TimeoutCancellationException ->
             if (viaProxy) Errors.of(ErrorCode.PROXY_UNAVAILABLE) else Errors.of(ErrorCode.TIMEOUT)
         is UnknownHostException, is ConnectException -> if (viaProxy) Errors.of(ErrorCode.PROXY_UNAVAILABLE) else Errors.of(ErrorCode.NETWORK)

@@ -1,5 +1,6 @@
 package com.vidbox.data.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -27,4 +28,6 @@ data class DownloadEntity(
     val pauseReason: String?,
     val attempt: Int,
     val needsCleanup: Boolean = false,
+    /** Per-failure facts such as the storage shortfall; the code alone cannot carry them. */
+    @ColumnInfo(defaultValue = "NULL") val errorDetail: String? = null,
 )

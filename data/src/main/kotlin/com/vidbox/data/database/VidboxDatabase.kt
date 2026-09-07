@@ -18,9 +18,10 @@ abstract class VidboxDatabase : RoomDatabase() {
     abstract fun allowlist(): AllowlistDao
 
     companion object {
-        /** Adds the browser tables. The downloads table is untouched, so no row is ever lost. */
+        /** Adds the browser tables and one nullable column; existing download rows are preserved untouched. */
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `downloads` ADD COLUMN `errorDetail` TEXT DEFAULT NULL")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `tabs` (`id` TEXT NOT NULL, `url` TEXT, `title` TEXT, `position` INTEGER NOT NULL, " +
                     "`isActive` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `lastActiveAt` INTEGER NOT NULL, `faviconPath` TEXT, PRIMARY KEY(`id`))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_tabs_position` ON `tabs` (`position`)")

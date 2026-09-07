@@ -23,6 +23,10 @@ data class DownloadError(val code: ErrorCode, val message: String, val retryable
 
 class DownloadException(val error: DownloadError, cause: Throwable? = null) : Exception(error.message, cause)
 
+/** Raised by the network layer when the failing hop is the user's proxy rather than the site. */
+class ProxyUnavailableException(cause: java.io.IOException) :
+    java.io.IOException("Proxy unavailable: ${cause.javaClass.simpleName}", cause)
+
 object Errors {
     fun of(code: ErrorCode): DownloadError = when (code) {
         ErrorCode.INVALID_URL -> DownloadError(code, "Enter a complete HTTPS video link, without sign-in credentials.", false)

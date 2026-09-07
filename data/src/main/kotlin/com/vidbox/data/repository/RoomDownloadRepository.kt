@@ -62,6 +62,7 @@ class RoomDownloadRepository @Inject constructor(
         val from = DownloadState.valueOf(row.state)
         if (from !in expected || !DownloadStateMachine.permits(from, to)) return@withTransaction false
         dao.update(row.copy(state = to.name, pauseReason = pauseReason?.name, errorCode = error?.code?.name,
+            errorDetail = error?.detail?.take(512),
             speedBytesPerSecond = 0, etaSeconds = null,
             startedAt = if (to.isRunning) row.startedAt ?: clock.nowMillis() else row.startedAt,
             completedAt = if (to.isTerminal) clock.nowMillis() else null,
@@ -90,7 +91,7 @@ class RoomDownloadRepository @Inject constructor(
         dao.update(row.copy(state = DownloadState.COMPLETED.name, outputUri = stored.uri, pendingUri = null,
             fileName = stored.fileName, mimeType = stored.mimeType, totalBytes = stored.sizeBytes,
             downloadedBytes = stored.sizeBytes, speedBytesPerSecond = 0, etaSeconds = null,
-            completedAt = clock.nowMillis(), errorCode = null, fileMissing = false, needsCleanup = true))
+            completedAt = clock.nowMillis(), errorCode = null, errorDetail = null, fileMissing = false, needsCleanup = true))
         true
     }
     override suspend fun setMissing(id: String, missing: Boolean) = database.withTransaction {
@@ -107,7 +108,7 @@ class RoomDownloadRepository @Inject constructor(
         fileName = e.fileName, state = DownloadState.valueOf(e.state), downloadedBytes = e.downloadedBytes,
         totalBytes = e.totalBytes, speedBytesPerSecond = e.speedBytesPerSecond, etaSeconds = e.etaSeconds,
         createdAt = e.createdAt, startedAt = e.startedAt, completedAt = e.completedAt,
-        error = e.errorCode?.let { Errors.of(ErrorCode.valueOf(it)) }, outputUri = e.outputUri,
+        error = e.errorCode?.let { Errors.of(ErrorCode.valueOf(it)).copy(detail = e.errorDetail) }, outputUri = e.outputUri,
         pendingUri = e.pendingUri, mimeType = e.mimeType, fileMissing = e.fileMissing,
         resumeSupported = e.resumeSupported, pauseReason = e.pauseReason?.let(PauseReason::valueOf),
         attempt = e.attempt, needsCleanup = e.needsCleanup,

@@ -89,6 +89,9 @@ class BrowserModelsTest {
         assertEquals(ErrorCode.NETWORK, ErrorMapper.from(IOException("unexpected end of stream")).code)
         assertEquals(ErrorCode.PROXY_UNAVAILABLE, ErrorMapper.from(IOException("unexpected end of stream"), viaProxy = true).code)
         assertEquals(ErrorCode.PROXY_AUTH, ErrorMapper.engine("ERROR: HTTP Error 407: Proxy Authentication Required").code)
+        assertEquals(ErrorCode.PROXY_UNAVAILABLE, ErrorMapper.from(ProxyUnavailableException(ConnectException("refused"))).code)
+        assertFalse(Errors.of(ErrorCode.PROXY_AUTH).retryable)
+        assertTrue(Errors.of(ErrorCode.PROXY_UNAVAILABLE).retryable)
     }
 
     @Test fun lowStorageCarriesRequiredAndAvailable() {

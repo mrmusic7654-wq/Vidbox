@@ -18,7 +18,7 @@ class VideoSearchParserTest {
                "duration":212.0,"view_count":1400000000.0,"channel":"A channel",
                "thumbnails":[{"url":"http://insecure.example/i.jpg","width":40},{"url":"https://i.example/320.jpg","width":320},
                              {"url":"https://i.example/1280.jpg","width":1280}]},
-              {"id":"no-thumb","title":"Second, id-only entry","channel":"@handle","duration":61.0},
+              {"id":"no-thumb","title":"Second, id-only entry","channel":"@handle","duration":61.0,"view_count":2500.0},
               {"_type":"playlist","id":"mixed-list","title":"ignored nested playlist"},
               {"id":"live-one","title":"Live now","is_live":true},
               {"id":"Untitled","title":""}

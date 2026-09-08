@@ -17,15 +17,21 @@ class SearchVideos @Inject constructor(private val searcher: VideoSearcher) {
 
         /**
          * Whether typed input is an attempt at a link rather than a search phrase. Anything
-         * with a scheme separator (including bad ones like `javascript:`) is analyzed as a
-         * link so the user gets validation feedback instead of nonsense search results.
+         * with an authority separator or a URI-style scheme prefix (including bad ones like
+         * `javascript:alert(1)`) is analyzed as a link so the user gets validation feedback
+         * instead of nonsense search results. A space after the colon keeps prose a search:
+         * "NASA: moon landing" searches, "javascript:alert(1)" validates and fails honestly.
          */
         fun looksLikeLink(raw: String): Boolean {
             val value = raw.trim()
             return value.startsWith("http://", ignoreCase = true) ||
                 value.startsWith("https://", ignoreCase = true) ||
                 value.contains("://") ||
-                value.startsWith("www.", ignoreCase = true)
+                value.startsWith("www.", ignoreCase = true) ||
+                SCHEME_PREFIX.containsMatchIn(value)
         }
+
+        /** RFC scheme syntax (`letter[letter|digit|+|-|.]*:`) with no space after the separator. */
+        private val SCHEME_PREFIX = Regex("^[a-zA-Z][a-zA-Z0-9+.-]*:\\S")
     }
 }

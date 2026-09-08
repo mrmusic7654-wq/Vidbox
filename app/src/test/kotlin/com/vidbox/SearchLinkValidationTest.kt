@@ -89,4 +89,18 @@ class SearchLinkValidationTest {
         assertEquals("the phrase went through the search branch", "Kurzgesagt docs", viewModel.state.value.searchedFor)
         collector.cancel()
     }
+
+    @Test
+    fun proseWithAColonStaysASearch() = runTest {
+        val viewModel = viewModel()
+        val events = mutableListOf<SearchEvent>()
+        val collector = launch { viewModel.events.collect(events::add) }
+        viewModel.input("NASA: moon landing")
+        viewModel.submit()
+        advanceUntilIdle()
+        assertTrue(events.isEmpty())
+        assertNull(viewModel.state.value.analysisError)
+        assertEquals("NASA: moon landing", viewModel.state.value.searchedFor)
+        collector.cancel()
+    }
 }

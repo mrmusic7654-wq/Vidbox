@@ -14,7 +14,7 @@ An Android video and audio downloader built with Kotlin, Compose and Material 3.
 4. Results come from a direct-media HTTP probe or the bundled yt-dlp engine, not a fixed list of sample formats. Video is offered **only as MP4**, one option per quality the source actually reports — no invented or "unknown" qualities. Separate audio/video options are clearly marked.
 5. Tap **Download media**. Manage the actual queue in the Download tab or its foreground notifications.
 6. Completed media appears in the **Video** and **Audio** tabs (and the Download tab's completed list); generic browser files (PDF, archives, images, …) land in **Downloads/Vidbox**. Open, share, search, sort, inspect, or delete them there.
-7. Play anything back in the built-in player: double-tap to skip ±10 s, drag to scrub, drag the edges for brightness/volume, plus speed, resize modes, control lock, and a docked mini player that follows you across tabs.
+7. Play anything back in the built-in player: double-tap to skip ±10 s, drag to scrub, drag the edges for brightness/volume, plus speed, resize modes, and a control lock.
 
 Files default to **Movies/Vidbox** (video) or **Music/Vidbox** (audio) using MediaStore. A folder selected in Settings uses Android's Storage Access Framework. Folder changes apply to new tasks; an in-flight task retains its destination. When a destination already holds a file with the same name, the default **Keep both** policy lets the platform uniquify the new file; **Skip duplicates** (Settings → Downloads) refuses the transfer before bytes are copied.
 

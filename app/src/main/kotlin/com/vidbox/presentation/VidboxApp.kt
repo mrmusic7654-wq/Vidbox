@@ -57,7 +57,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
     val network by downloads.connectivity.collectAsStateWithLifecycle()
     val browserState by browser.state.collectAsStateWithLifecycle()
     val searchState by search.state.collectAsStateWithLifecycle()
-    val playerState by player.state.collectAsStateWithLifecycle()
+
     val context = LocalContext.current
     val preferences by settings.state.collectAsStateWithLifecycle()
     // One history query powers the Download tab and the Video/Audio libraries.
@@ -151,12 +151,6 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
             Scaffold(containerColor = MaterialTheme.colorScheme.background,
                 bottomBar = {
                     Column {
-                        if (playerState.active) {
-                            MiniPlayer(playerState,
-                                onToggle = { player.togglePlayPause() },
-                                onClose = { player.close() },
-                                onOpen = { PlayerActivity.start(context) })
-                        }
                         NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
                             listOf(Destination.HOME, Destination.DOWNLOADS, Destination.VIDEOS, Destination.AUDIO)
                                 .forEach { item ->
@@ -242,13 +236,6 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
                                 catch (_: ActivityNotFoundException) { scope.launch { snackbars.showSnackbar("No browser is installed") } }
                             },
                             onClosed = { browsing = false })
-                        if (playerState.active) {
-                            MiniPlayer(playerState,
-                                onToggle = { player.togglePlayPause() },
-                                onClose = { player.close() },
-                                onOpen = { PlayerActivity.start(context) },
-                                modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding())
-                        }
                     }
                 }
             }

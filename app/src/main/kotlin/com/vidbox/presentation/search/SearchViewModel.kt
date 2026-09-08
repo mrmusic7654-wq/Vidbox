@@ -6,6 +6,7 @@ import com.vidbox.domain.model.VideoSearchResult
 import com.vidbox.domain.repository.SettingsRepository
 import com.vidbox.domain.usecase.SearchVideos
 import com.vidbox.domain.util.ErrorMapper
+import com.vidbox.domain.util.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel

@@ -685,7 +685,7 @@ internal fun parsePageFiles(payload: String): List<PageFile> {
     return files.take(40)
 }
 
-private const val SCAN_PAGE_JS = """
+private val SCAN_PAGE_JS = """
 (function() {
   var lines = [];
   var seen = {};

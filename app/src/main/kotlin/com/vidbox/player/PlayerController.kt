@@ -1,9 +1,11 @@
 package com.vidbox.player
 
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.vidbox.di.ApplicationScope
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -46,10 +48,11 @@ data class PlayerEntry(
 }
 
 /**
- * App-scoped playback: the same ExoPlayer instance powers the full advanced player and
- * the docked mini player, so browsing tabs while media plays just works without a media
- * foreground service. Playback pauses when the whole app leaves the foreground.
+ * App-scoped playback: the same ExoPlayer instance powers the full advanced player,
+ * so reopening the player screen resumes the exact session. Playback pauses when the
+ * whole app leaves the foreground.
  */
+@OptIn(UnstableApi::class)
 @Singleton
 class PlayerController @Inject constructor(
     @ApplicationContext private val context: Context,

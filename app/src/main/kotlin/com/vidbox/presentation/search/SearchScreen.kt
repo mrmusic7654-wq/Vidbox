@@ -96,7 +96,7 @@ fun SearchScreen(state: SearchState, analysisError: String?, onBack: () -> Unit,
             state.query.isBlank() -> Recents(state, onUseRecent, onRemoveRecent, onClearRecents)
             else -> Results(state.results, state.searchedFor.orEmpty(), onDownload, onOpenInBrowser)
         }
-        analysisError?.let {
+        (state.analysisError ?: analysisError)?.let {
             Box(Modifier.padding(16.dp)) { InfoBanner(it, error = true, modifier = Modifier.testTag("analysis_error")) }
         }
     }

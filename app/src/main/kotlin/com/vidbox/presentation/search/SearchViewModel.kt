@@ -16,6 +16,8 @@ data class SearchState(
     val query: String = "",
     val searching: Boolean = false,
     val error: String? = null,
+    /** A link the user submitted failed validation before analysis even started. */
+    val analysisError: String? = null,
     val results: List<VideoSearchResult> = emptyList(),
     val searchedFor: String? = null,
     val recents: List<String> = emptyList(),
@@ -45,13 +47,23 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun input(value: String) { mutableState.update { it.copy(query = value.take(SearchVideos.MAX_QUERY), error = null) } }
+    fun input(value: String) { mutableState.update { it.copy(query = value.take(SearchVideos.MAX_QUERY), error = null, analysisError = null) } }
 
     fun submit() {
         val query = state.value.query.trim()
         if (query.isEmpty() || state.value.searching) return
         if (SearchVideos.looksLikeLink(query)) {
-            mutableState.update { it.copy(error = null) }
+            // Validate before routing so a bad scheme reports inline where it was typed,
+            // without waiting on the analyzer round-trip.
+            val validated = runCatching { UrlValidator.validate(query) }
+            if (validated.isFailure) {
+                val message = validated.exceptionOrNull()
+                    ?.let { ErrorMapper.from(it).fullMessage }
+                    ?: "Enter a complete HTTPS video link."
+                mutableState.update { it.copy(error = null, analysisError = message) }
+                return
+            }
+            mutableState.update { it.copy(error = null, analysisError = null) }
             eventChannel.trySend(SearchEvent.OpenLink(query))
             return
         }

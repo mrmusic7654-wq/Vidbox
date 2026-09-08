@@ -48,7 +48,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
     notificationsAllowed: Boolean, onRequestNotifications: () -> Unit,
     onChooseFolder: () -> Unit, openDownloads: Boolean, onNavigationConsumed: () -> Unit,
     openSearch: Boolean, onSearchConsumed: () -> Unit) {
-    var destination by rememberSaveable { mutableStateOf(Destination.HOME) }
+    var destination by remember { mutableStateOf(Destination.HOME) }
     var searching by rememberSaveable { mutableStateOf(false) }
     var browsing by rememberSaveable { mutableStateOf(false) }
     val homeState by home.state.collectAsStateWithLifecycle()

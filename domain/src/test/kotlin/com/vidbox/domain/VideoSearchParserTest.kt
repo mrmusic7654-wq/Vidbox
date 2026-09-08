@@ -64,8 +64,8 @@ class VideoSearchParserTest {
 
     @Test
     fun idsWithoutTitlesAreDropped() {
-        val output = """{"entries":[{"id":"x1"},{"id":"x2","title":"ok"}]}"""
+        val output = """{"entries":[{"id":"x1"},{"id":"x2abc123","title":"ok"}]}"""
         val results = parser.parse(output)
-        assertEquals(listOf("x2"), results.map { it.id })
+        assertEquals(listOf("x2abc123"), results.map { it.id })
     }
 }

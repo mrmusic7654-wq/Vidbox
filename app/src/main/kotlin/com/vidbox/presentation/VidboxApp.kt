@@ -30,6 +30,7 @@ import com.vidbox.presentation.settings.*
 import com.vidbox.player.PlayerActivity
 import com.vidbox.player.PlayerController
 import com.vidbox.player.PlayerEntry
+import com.vidbox.util.FileIntents
 import kotlinx.coroutines.launch
 
 private enum class Destination(val label: String, val tag: String) {
@@ -257,7 +258,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
             DownloadDetails(record, onDismiss = { details = null },
                 onPlay = if (record.state == DownloadState.COMPLETED && !record.fileMissing &&
                     record.spec.kind == DownloadKind.MEDIA && record.spec.selection.primary.hasVideo)
-                    ({ play(context, player, listOf(record.toEntry()), 0) }) else null)
+                    ({ scope.launch { play(context, player, listOf(record.toEntry()), 0) } }) else null)
         }
         deletion?.let { (record, deleteFile) ->
             AlertDialog(onDismissRequest = { deletion = null }, title = { Text(if (deleteFile) "Delete this file?" else "Remove history entry?") },

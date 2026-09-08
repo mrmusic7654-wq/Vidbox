@@ -21,7 +21,8 @@ class SettingsEncodingTest {
         assertFalse(settings.browserDesktop)
         assertTrue(settings.browserJavaScript)
         assertTrue(settings.browserCookies)
-        assertTrue(settings.dynamicColors)
+        // Vidbox's amber identity is the default; Material You palettes are opt-in.
+        assertFalse(settings.dynamicColors)
     }
 
     @Test fun applyValidatesEveryFieldBeforePersisting() {

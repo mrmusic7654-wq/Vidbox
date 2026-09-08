@@ -73,7 +73,7 @@ class PlayerController @Inject constructor(
         queue = playable
         index = startIndex.coerceIn(0, playable.lastIndex)
         val engine = ensurePlayer()
-        engine.setMediaItems(playable.map { MediaItem.fromUri(it.uri })
+        engine.setMediaItems(playable.map { MediaItem.fromUri(it.uri) }
             .mapIndexed { position, item -> item.buildUpon().setTag(playable[position]).build() })
         engine.seekToDefaultPosition(index)
         engine.prepare()

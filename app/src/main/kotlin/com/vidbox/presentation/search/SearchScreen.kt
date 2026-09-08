@@ -83,6 +83,12 @@ fun SearchScreen(state: SearchState, analysisError: String?, onBack: () -> Unit,
             }
         }
 
+        // Inline feedback sits directly under the search bar so it stays on screen
+        // even when the results list below fills the remaining height.
+        (state.analysisError ?: analysisError)?.let {
+            Box(Modifier.padding(16.dp)) { InfoBanner(it, error = true, modifier = Modifier.testTag("analysis_error")) }
+        }
+
         when {
             state.searching -> Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -95,9 +101,6 @@ fun SearchScreen(state: SearchState, analysisError: String?, onBack: () -> Unit,
             }
             state.query.isBlank() -> Recents(state, onUseRecent, onRemoveRecent, onClearRecents)
             else -> Results(state.results, state.searchedFor.orEmpty(), onDownload, onOpenInBrowser)
-        }
-        (state.analysisError ?: analysisError)?.let {
-            Box(Modifier.padding(16.dp)) { InfoBanner(it, error = true, modifier = Modifier.testTag("analysis_error")) }
         }
     }
 }

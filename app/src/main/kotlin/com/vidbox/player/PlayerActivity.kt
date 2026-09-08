@@ -88,6 +88,7 @@ private fun PlayerScreen(activity: Activity, controller: PlayerController) {
     val state by controller.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val view = LocalView.current
+    val scope = rememberCoroutineScope()
     val window = activity.window
 
     var controlsVisible by remember { mutableStateOf(true) }
@@ -160,7 +161,7 @@ private fun PlayerScreen(activity: Activity, controller: PlayerController) {
                     } else {
                         controller.forward(); hint("10 seconds ⟩")
                     }
-                    launch { delay(700); gestureHint = null }
+                    scope.launch { delay(700); gestureHint = null }
                 })
         }
         .pointerInput(locked, state.durationMs) {

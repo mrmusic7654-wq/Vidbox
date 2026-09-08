@@ -4,6 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
@@ -33,13 +35,17 @@ import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Queue
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Sort
 import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material.icons.rounded.SwapVert
+import androidx.compose.material.icons.rounded.Tab
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.VideoFile
 import androidx.compose.material.icons.rounded.VideoLibrary
@@ -115,4 +121,12 @@ object VidboxIcons {
     val privacy: ImageVector = Icons.Rounded.VerifiedUser
     val check: ImageVector = Icons.Rounded.Check
     val queue: ImageVector = Icons.Rounded.Queue
+
+    // Downloader-style home and library
+    val add: ImageVector = Icons.Rounded.Add
+    val playCircle: ImageVector = Icons.Rounded.PlayCircle
+    val shield: ImageVector = Icons.Rounded.Security
+    val swapSort: ImageVector = Icons.Rounded.SwapVert
+    val apps: ImageVector = Icons.Rounded.Apps
+    val newTab: ImageVector = Icons.Rounded.Tab
 }

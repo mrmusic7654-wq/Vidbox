@@ -8,22 +8,25 @@ An Android video and audio downloader built with Kotlin, Compose and Material 3.
 
 ## Use
 
-1. Browse in the app's **Browser** tab (HTTPS pages only), or paste/share a supported **HTTPS** video link.
-2. On a video page tap **Download from this page**; direct links to media or files (`.mp4`, `.pdf`, `.zip`, …) ask once and go straight to the queue.
-3. Tap **Analyze link** for pasted links. Results come from a direct-media HTTP probe or the bundled yt-dlp engine, not a fixed list of sample formats.
-4. Video is offered **only as MP4**, one option per quality the source actually reports — no invented or "unknown" qualities. Separate audio/video options are clearly marked.
-5. Tap **Download media**. Manage the actual queue in Downloads or its foreground notifications.
-6. Completed media appears in Library; generic browser files (PDF, archives, images, …) land in **Downloads/Vidbox**. Open, share, search, sort, inspect, or delete them there.
+1. **Home** is a downloader-style launcher: an orange **Search video online** pill opens the YouTube search flow, a **Search or type a URL** bar opens the tabbed browser on the same screen, and site shortcut tiles (TikTok, Facebook, X, Vimeo, … plus your own) jump straight to a site.
+2. **Search video online** searches YouTube by name through the bundled yt-dlp engine. Every result shows thumbnail, channel, duration, and a one-tap download; pasting a link instead searches nothing — it analyzes that exact video.
+3. Paste/share a supported **HTTPS** link, or open any page in the browser and use ⋮ → **Download from this page**; direct links to media or files (`.mp4`, `.pdf`, `.zip`, …) ask once and go straight to the queue.
+4. Results come from a direct-media HTTP probe or the bundled yt-dlp engine, not a fixed list of sample formats. Video is offered **only as MP4**, one option per quality the source actually reports — no invented or "unknown" qualities. Separate audio/video options are clearly marked.
+5. Tap **Download media**. Manage the actual queue in the Download tab or its foreground notifications.
+6. Completed media appears in the **Video** and **Audio** tabs (and the Download tab's completed list); generic browser files (PDF, archives, images, …) land in **Downloads/Vidbox**. Open, share, search, sort, inspect, or delete them there.
+7. Play anything back in the built-in player: double-tap to skip ±10 s, drag to scrub, drag the edges for brightness/volume, plus speed, resize modes, control lock, and a docked mini player that follows you across tabs.
 
 Files default to **Movies/Vidbox** (video) or **Music/Vidbox** (audio) using MediaStore. A folder selected in Settings uses Android's Storage Access Framework. Folder changes apply to new tasks; an in-flight task retains its destination. When a destination already holds a file with the same name, the default **Keep both** policy lets the platform uniquify the new file; **Skip duplicates** (Settings → Downloads) refuses the transfer before bytes are copied.
 
 ### Supported paths and limits
 
-- **In-app browser** (HTTPS): address/search bar, back/forward, reload and stop, a home button, a loading indicator, an explicit HTTPS indicator (open padlock when a page is not secure), share, copy link, open externally, download links (`.mp4`, `.pdf`, …), a *Download from this page* action that analyzes the current page, session page history, and *Clear browsing data* (cookies, site storage, form data, cache). Desktop-site mode swaps in a desktop user agent on request; JavaScript and cookies can be toggled in Settings (off may break sites). Browsing data stays in Vidbox's WebView profile: cookies/session state are never exported to downloads, page history is memory-only and cleared with browsing data, and yt-dlp still analyzes pages without sign-in or cookies.
+- **In-app browser** (HTTPS): Chrome-style pill address bar with a security shield, a home button, a tab counter with a card-grid **tab switcher** (up to 20 tabs, restored across launches), share, copy link, download links (`.mp4`, `.pdf`, …), a *Download from this page* action that analyzes the current page, per-tab session history, and *Clear browsing data* (cookies, site storage, form data, cache). Desktop-site mode swaps in a desktop user agent on request; JavaScript and cookies can be toggled in Settings (off may break sites). Browsing data stays in Vidbox's WebView profile: cookies/session state are never exported to downloads, and yt-dlp still analyzes pages without sign-in or cookies.
+- **YouTube search** runs the same bundled engine with `--flat-playlist` metadata queries; results are on-device only, and nothing about your searches leaves the phone except the queries YouTube itself answers.
 - Direct HTTPS media and generic files (PDF, archives, images, …): streamed with OkHttp and saved under **Downloads/Vidbox**. Stable ETag/Last-Modified validators plus byte ranges enable safe resume. Otherwise interruption restarts the transfer instead of splicing incompatible bytes.
 - Public, non-DRM VOD pages supported by the **bundled yt-dlp release**: native HTTP/fragment downloads; resume is best effort, and expired links/formats can require re-analysis.
 - Separate video/audio: FFmpeg **stream copy**, with container/codec compatibility checked before offering a merge. Video is offered as **MP4 only**, with exactly one option per quality (resolution + frame rate) the source reports; a source that only ships WebM/VP9 is reported as unavailable in MP4 rather than mislabelled. No re-encoding or fabricated qualities.
-- Playlists, live broadcasts, sign-in/cookie import, encrypted credential entry, DRM-protected media, arbitrary command/options input, and transcoding presets are intentionally not supported.
+- **Playback** is app-local: no media foreground service, so audio pauses when the whole app is backgrounded. Playlists beyond a play queue of the files you picked, cast, and streaming remote media in the player are not supported.
+- Playlists (as downloads), live broadcasts, sign-in/cookie import, encrypted credential entry, DRM-protected media, arbitrary command/options input, and transcoding presets are intentionally not supported.
 - A source can reject a request or require verification even if yt-dlp has an extractor for the site. Vidbox reports that; it does not try to defeat the restriction.
 - Notifications require permission on Android 13+. Refusing it does not grant an exemption from foreground-service rules; Android may hide controls from the notification drawer.
 - Force-stop prevents automatic restart until you open the app. Reboot recovery offers a notification rather than illegally starting a dataSync service from boot. Android 15+'s six-hour dataSync budget is respected. See [background behavior](docs/ARCHITECTURE.md#background-and-recovery).
@@ -66,9 +69,9 @@ domain/   Pure Kotlin models, contracts, state machine, format planning, use cas
   model/ repository/ usecase/ util/
 data/     Android implementations and bounded, cancellable media I/O
   database/ network/ extractor/ downloader/ storage/ repository/ di/
-app/      Compose screens, ViewModels, WebView browser, foreground service and notifications
-  presentation/{home,browser,formats,downloads,history,settings,components,theme}/
-  service/ worker/ di/ util/
+app/      Compose screens, ViewModels, WebView tab browser, ExoPlayer-based player, foreground service
+  presentation/{home,search,browser,formats,downloads,library,settings,components,theme}/
+  player/ service/ worker/ di/ util/
 ```
 
 Room is the source of truth, including pending publication URIs. Original and thumbnail URLs are AES-GCM encrypted with an Android Keystore key because links can contain bearer tokens. App backups are disabled. Downloads use app-private staging directories and are never buffered entirely into memory.

@@ -75,10 +75,11 @@ fun EmptyState(icon: ImageVector, title: String, message: String, modifier: Modi
 }
 
 @Composable
-fun InfoBanner(text: String, error: Boolean = false, action: String? = null, onAction: () -> Unit = {}) {
+fun InfoBanner(text: String, error: Boolean = false, modifier: Modifier = Modifier, action: String? = null,
+    onAction: () -> Unit = {}) {
     val background = if (error) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
     val foreground = if (error) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer
-    Surface(shape = RoundedCornerShape(14.dp), color = background) {
+    Surface(shape = RoundedCornerShape(14.dp), color = background, modifier = modifier) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(if (error) VidboxIcons.error else VidboxIcons.info, null, Modifier.size(20.dp), tint = foreground)
             Text(text, color = foreground, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f).padding(start = 10.dp))

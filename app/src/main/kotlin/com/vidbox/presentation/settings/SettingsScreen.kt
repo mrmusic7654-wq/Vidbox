@@ -104,7 +104,7 @@ fun SettingsScreen(settings: AppSettings, onUpdate: ((AppSettings) -> AppSetting
                 SettingChoice(VidboxIcons.appearance, "Theme", settings.theme.name.lowercase().replaceFirstChar(Char::uppercase), AppTheme.entries, settings.theme,
                     label = { it.name.lowercase().replaceFirstChar(Char::uppercase) }, onSelect = { theme -> onUpdate { it.copy(theme = theme) } })
                 HorizontalDivider(Modifier.padding(start = 56.dp))
-                SettingSwitch(VidboxIcons.appearance, "Dynamic colors", "Follow your device's Material You palette on Android 12+.",
+                SettingSwitch(VidboxIcons.appearance, "Dynamic colors", "Blend your device's Material You palette with Vidbox on Android 12+.",
                     settings.dynamicColors, "settings_dynamic") { enabled -> onUpdate { it.copy(dynamicColors = enabled) } }
             }
         }

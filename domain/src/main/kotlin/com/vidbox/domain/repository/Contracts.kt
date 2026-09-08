@@ -8,6 +8,11 @@ interface VideoExtractor {
     suspend fun analyze(url: String): MediaInfo
 }
 
+interface VideoSearcher {
+    /** Free-text search over a public video site (YouTube through the bundled engine). */
+    suspend fun search(query: String, limit: Int): List<VideoSearchResult>
+}
+
 interface Downloader {
     /** A return value is a verified, complete staging file; cancellation must close processes/streams. */
     suspend fun download(record: DownloadRecord, onProgress: suspend (DownloadProgress) -> Unit): StagedMedia

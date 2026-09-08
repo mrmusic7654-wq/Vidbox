@@ -16,22 +16,22 @@ import androidx.core.view.WindowCompat
 import com.vidbox.domain.model.AppTheme
 
 private val Light = lightColorScheme(
-    primary = Color(0xFF006B63), onPrimary = Color.White,
-    primaryContainer = Color(0xFFD4F4EB), onPrimaryContainer = Color(0xFF003D37),
-    secondary = Color(0xFF46626C), secondaryContainer = Color(0xFFE0EBEF),
-    background = Color(0xFFF6F8FA), onBackground = Color(0xFF15282C),
-    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF15282C),
-    surfaceVariant = Color(0xFFECF1F3), onSurfaceVariant = Color(0xFF56656A),
-    outline = Color(0xFF829197), outlineVariant = Color(0xFFDDE5E8),
+    primary = Color(0xFFF59E0B), onPrimary = Color(0xFF271B00),
+    primaryContainer = Color(0xFFFFE9C2), onPrimaryContainer = Color(0xFF2E2200),
+    secondary = Color(0xFF6F5B3F), secondaryContainer = Color(0xFFF6E7C8),
+    background = Color(0xFFFAF9F7), onBackground = Color(0xFF1D1B16),
+    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF1D1B16),
+    surfaceVariant = Color(0xFFF1ECE2), onSurfaceVariant = Color(0xFF5D5647),
+    outline = Color(0xFF908876), outlineVariant = Color(0xFFE4DDD0),
 )
 private val Dark = darkColorScheme(
-    primary = Color(0xFF6ADBC5), onPrimary = Color(0xFF003D35),
-    primaryContainer = Color(0xFF154D46), onPrimaryContainer = Color(0xFFB2F5E3),
-    secondary = Color(0xFFA8CAD5), secondaryContainer = Color(0xFF263E47),
-    background = Color(0xFF0F191E), onBackground = Color(0xFFE4EDF0),
-    surface = Color(0xFF17252B), onSurface = Color(0xFFE4EDF0),
-    surfaceVariant = Color(0xFF213239), onSurfaceVariant = Color(0xFFB2C3CA),
-    outline = Color(0xFF82989F), outlineVariant = Color(0xFF30434B),
+    primary = Color(0xFFFFB94E), onPrimary = Color(0xFF271B00),
+    primaryContainer = Color(0xFF51390B), onPrimaryContainer = Color(0xFFFFE0AC),
+    secondary = Color(0xFFD9C5A0), secondaryContainer = Color(0xFF3E3320),
+    background = Color(0xFF15130E), onBackground = Color(0xFFEDE6DA),
+    surface = Color(0xFF1D1A14), onSurface = Color(0xFFEDE6DA),
+    surfaceVariant = Color(0xFF292418), onSurfaceVariant = Color(0xFFC9C1B1),
+    outline = Color(0xFF948D7D), outlineVariant = Color(0xFF3B3527),
 )
 private val Type = Typography(
     displaySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = 40.sp, letterSpacing = (-1).sp),
@@ -45,10 +45,10 @@ private val Type = Typography(
 )
 
 @Composable
-fun VidboxTheme(theme: AppTheme, dynamicColors: Boolean = true, content: @Composable () -> Unit) {
+fun VidboxTheme(theme: AppTheme, dynamicColors: Boolean = false, content: @Composable () -> Unit) {
     val dark = when (theme) { AppTheme.SYSTEM -> isSystemInDarkTheme(); AppTheme.DARK -> true; AppTheme.LIGHT -> false }
     val context = LocalContext.current
-    // Material You palettes on Android 12+ unless the user prefers Vidbox's own identity.
+    // Material You palettes on Android 12+ only when the user opts in; Vidbox keeps its amber identity otherwise.
     val colorScheme = if (dynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else if (dark) Dark else Light

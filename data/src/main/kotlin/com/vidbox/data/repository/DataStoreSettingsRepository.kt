@@ -8,6 +8,7 @@ import com.vidbox.data.database.SecretCipher
 import com.vidbox.domain.model.*
 import com.vidbox.domain.repository.SettingsRepository
 import com.vidbox.domain.util.BrowserLinks
+
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import java.io.IOException
@@ -35,13 +36,15 @@ internal class SettingsEncoding(private val cipher: SecretCipher? = null) {
         browserDesktop = prefs[Keys.desktop] ?: false,
         browserJavaScript = prefs[Keys.javascript] ?: true,
         browserCookies = prefs[Keys.cookies] ?: true,
-        dynamicColors = prefs[Keys.dynamic] ?: true,
+        dynamicColors = prefs[Keys.dynamic] ?: false,
         searchEngineId = prefs[Keys.searchEngine]?.takeIf { id ->
             id == SearchEngines.CUSTOM_ID || SearchEngines.builtIn.any { it.id == id } } ?: SearchEngines.DEFAULT.id,
         customSearchTemplate = prefs[Keys.customSearch]?.takeIf { SearchEngines.custom(it) != null },
         restoreTabs = prefs[Keys.restoreTabs] ?: true,
         saveBrowsingHistory = prefs[Keys.saveHistory] ?: true,
         addressSuggestions = prefs[Keys.suggestions] ?: true,
+        searchHistory = decodeLines(prefs[Keys.searchHistory]).take(MAX_SEARCH_HISTORY),
+        siteShortcuts = decodeShortcuts(prefs[Keys.shortcuts]),
         blockAds = prefs[Keys.blockAds] ?: true,
         blockTrackers = prefs[Keys.blockTrackers] ?: true,
         filterListUpdates = prefs[Keys.filterUpdates] ?: true,
@@ -91,6 +94,14 @@ internal class SettingsEncoding(private val cipher: SecretCipher? = null) {
         prefs[Keys.restoreTabs] = next.restoreTabs
         prefs[Keys.saveHistory] = next.saveBrowsingHistory
         prefs[Keys.suggestions] = next.addressSuggestions
+        val history = next.searchHistory.map { it.trim() }.filter { it.isNotEmpty() && it.length <= MAX_ENTRY_LENGTH }
+            .distinctBy { it.lowercase() }.take(MAX_SEARCH_HISTORY)
+        if (history.isEmpty()) prefs.remove(Keys.searchHistory) else prefs[Keys.searchHistory] = history.joinToString("\n")
+        val shortcuts = next.siteShortcuts.take(MAX_SHORTCUTS)
+        if (shortcuts.isEmpty()) prefs.remove(Keys.shortcuts)
+        else prefs[Keys.shortcuts] = shortcuts.joinToString("\n") { shortcut ->
+            sanitizeShortcutLabel(shortcut.label) + UNIT_SEPARATOR + shortcut.url.take(MAX_ENTRY_LENGTH)
+        }
         prefs[Keys.blockAds] = next.blockAds
         prefs[Keys.blockTrackers] = next.blockTrackers
         prefs[Keys.filterUpdates] = next.filterListUpdates
@@ -113,6 +124,8 @@ internal class SettingsEncoding(private val cipher: SecretCipher? = null) {
     }
 
     object Keys {
+        val searchHistory = stringPreferencesKey("video_search_history")
+        val shortcuts = stringPreferencesKey("home_site_shortcuts")
         val tree = stringPreferencesKey("destination_tree")
         val label = stringPreferencesKey("destination_label")
         val quality = intPreferencesKey("quality")
@@ -146,10 +159,32 @@ internal class SettingsEncoding(private val cipher: SecretCipher? = null) {
     }
 
     companion object {
+        private const val UNIT_SEPARATOR = '\u001F'
+        private const val MAX_SEARCH_HISTORY = 12
+        private const val MAX_SHORTCUTS = 8
+        private const val MAX_ENTRY_LENGTH = 512
+
         private val plain = SettingsEncoding(null)
         /** Encoding without a cipher: proxy credentials are dropped rather than written in clear. */
         fun decode(prefs: Preferences): AppSettings = plain.decode(prefs)
         fun apply(prefs: MutablePreferences, next: AppSettings) = plain.apply(prefs, next)
+
+        private fun decodeLines(raw: String?): List<String> = raw?.split('\n')
+            ?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+
+        private fun sanitizeShortcutLabel(label: String): String = label
+            .filter { it.code >= 0x20 && it != '\u001F' }
+            .trim().take(40).ifBlank { "Site" }
+
+        private fun decodeShortcuts(raw: String?): List<SiteShortcut> = raw?.split('\n')
+            ?.mapNotNull { line ->
+                val separator = line.indexOf(UNIT_SEPARATOR)
+                if (separator <= 0) return@mapNotNull null
+                val label = line.substring(0, separator).trim().ifBlank { return@mapNotNull null }
+                val url = line.substring(separator + 1).trim()
+                if (!BrowserLinks.isWebPage(url)) return@mapNotNull null
+                SiteShortcut(label, url)
+            }?.distinctBy { it.url }?.take(MAX_SHORTCUTS) ?: emptyList()
     }
 }
 

@@ -2,6 +2,7 @@ package com.vidbox.data.di
 
 import com.vidbox.data.downloader.*
 import com.vidbox.data.extractor.CompositeVideoExtractor
+import com.vidbox.data.extractor.YtDlpVideoSearcher
 import com.vidbox.data.storage.AndroidMediaStorage
 import com.vidbox.domain.repository.*
 import dagger.Binds
@@ -14,6 +15,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class ExtractorModule {
     @Binds @Singleton abstract fun extractor(impl: CompositeVideoExtractor): VideoExtractor
+    @Binds @Singleton abstract fun searcher(impl: YtDlpVideoSearcher): VideoSearcher
 }
 
 @Module

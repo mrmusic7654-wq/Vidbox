@@ -23,6 +23,7 @@ import com.vidbox.presentation.browser.BrowserViewModel
 import com.vidbox.presentation.downloads.DownloadsViewModel
 import com.vidbox.presentation.history.HistoryViewModel
 import com.vidbox.presentation.home.HomeViewModel
+import com.vidbox.presentation.search.SearchViewModel
 import com.vidbox.presentation.settings.SettingsViewModel
 import com.vidbox.presentation.theme.VidboxTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -37,8 +39,11 @@ class MainActivity : ComponentActivity() {
     private val downloads: DownloadsViewModel by viewModels()
     private val history: HistoryViewModel by viewModels()
     private val browser: BrowserViewModel by viewModels()
+    private val search: SearchViewModel by viewModels()
     private val settings: SettingsViewModel by viewModels()
+    @Inject lateinit var playerController: com.vidbox.player.PlayerController
     private var showDownloads by mutableStateOf(false)
+    private var startSearch by mutableStateOf(false)
     private var notificationPermission by mutableStateOf(true)
     private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         notificationPermission = notificationsAllowed()
@@ -66,10 +71,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val prefs by settings.state.collectAsStateWithLifecycle()
             VidboxTheme(prefs.theme, prefs.dynamicColors) {
-                VidboxApp(home, downloads, history, browser, settings, notificationPermission,
+                VidboxApp(home, downloads, history, browser, search, settings, playerController,
+                    notificationPermission,
                     onRequestNotifications = ::requestNotifications,
                     onChooseFolder = { folderPicker.launch(prefs.destinationTree?.let(Uri::parse)) },
-                    openDownloads = showDownloads, onNavigationConsumed = { showDownloads = false })
+                    openDownloads = showDownloads, onNavigationConsumed = { showDownloads = false },
+                    openSearch = startSearch, onSearchConsumed = { startSearch = false })
             }
         }
     }
@@ -78,9 +85,20 @@ class MainActivity : ComponentActivity() {
         notificationPermission = notificationsAllowed()
         downloads.onForeground()
     }
+
+    override fun onStop() {
+        super.onStop()
+        // No media foreground service: playback pauses when the whole app is backgrounded.
+        playerController.onAppBackground()
+    }
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); consume(intent) }
     private fun consume(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_SEND) intent.getStringExtra(Intent.EXTRA_TEXT)?.let { home.paste(UrlValidator.findInSharedText(it)) }
+        if (intent?.action == Intent.ACTION_SEND) intent.getStringExtra(Intent.EXTRA_TEXT)?.let { shared ->
+            val text = UrlValidator.findInSharedText(shared)
+            // A shared link goes straight to analysis; shared text opens the search flow.
+            if (com.vidbox.domain.usecase.SearchVideos.looksLikeLink(text)) { home.paste(text); home.analyze() }
+            else { search.input(text); startSearch = true }
+        }
         if (intent?.getBooleanExtra(OPEN_DOWNLOADS, false) == true) showDownloads = true
     }
     private fun notificationsAllowed() = androidx.core.app.NotificationManagerCompat.from(this).areNotificationsEnabled() &&

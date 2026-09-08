@@ -5,6 +5,9 @@ enum class AppTheme { SYSTEM, LIGHT, DARK }
 /** What happens when the destination already holds a file with the same name. */
 enum class DuplicatePolicy { KEEP_BOTH, SKIP }
 
+/** A home-screen shortcut tile the user added themselves. */
+data class SiteShortcut(val label: String, val url: String)
+
 data class AppSettings(
     val destinationTree: String? = null,
     val destinationLabel: String? = null,
@@ -22,8 +25,8 @@ data class AppSettings(
     val browserDesktop: Boolean = false,
     val browserJavaScript: Boolean = true,
     val browserCookies: Boolean = true,
-    /** Material You dynamic palettes on Android 12+. */
-    val dynamicColors: Boolean = true,
+    /** Material You dynamic palettes on Android 12+. Off by default so Vidbox keeps its identity. */
+    val dynamicColors: Boolean = false,
     // Browser
     val searchEngineId: String = SearchEngines.DEFAULT.id,
     /** Template with `%s` when [searchEngineId] is [SearchEngines.CUSTOM_ID]. */
@@ -31,6 +34,10 @@ data class AppSettings(
     val restoreTabs: Boolean = true,
     val saveBrowsingHistory: Boolean = true,
     val addressSuggestions: Boolean = true,
+    // Video search on the home screen (most recent first, bounded, never synced).
+    val searchHistory: List<String> = emptyList(),
+    /** Custom shortcut tiles added on the home screen, shown after the built-in sites. */
+    val siteShortcuts: List<SiteShortcut> = emptyList(),
     // Privacy protection
     val blockAds: Boolean = true,
     val blockTrackers: Boolean = true,

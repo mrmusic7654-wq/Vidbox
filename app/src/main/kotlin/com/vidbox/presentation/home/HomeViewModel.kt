@@ -70,6 +70,7 @@ class HomeViewModel @Inject constructor(
         }
     }
     fun cancelAnalysis() { analysis?.cancel(); mutableState.update { it.copy(analyzing = false) } }
+    fun dismissError() { mutableState.update { if (it.media != null) it else it.copy(error = null) } }
     fun dismissFormats() { mutableState.update { it.copy(media = null, error = null, options = emptyList(), selectedKey = null, videoUnavailable = false) } }
     fun select(key: String) {
         if (state.value.options.any { it.key == key }) mutableState.update { it.copy(selectedKey = key) }

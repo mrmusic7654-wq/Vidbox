@@ -22,14 +22,17 @@ class AppScreensTest {
         runBlocking { settings.update { AppSettings() }; repository.clearTerminalHistory() }
     }
     @Test fun mainScreenValidatesInput() {
-        compose.onNodeWithTag("home_url").performTextInput("javascript:alert(1)")
-        compose.onNodeWithTag("analyze_button").performClick()
+        compose.onNodeWithTag("home_search").performClick()
+        compose.onNodeWithTag("search_input").performTextInput("javascript:alert(1)")
+        compose.onNodeWithTag("search_submit").performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithTag("analysis_error").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("analysis_error").assertIsDisplayed()
         compose.onNodeWithTag("formats_screen").assertDoesNotExist()
     }
     @Test fun analysisDisplaysRealContractFieldsAndSelectsFormats() {
-        compose.onNodeWithTag("home_url").performTextInput("https://example.com/film")
-        compose.onNodeWithTag("analyze_button").performClick()
+        compose.onNodeWithTag("home_search").performClick()
+        compose.onNodeWithTag("search_input").performTextInput("https://example.com/film")
+        compose.onNodeWithTag("search_submit").performClick()
         compose.waitUntil(5000) { compose.onAllNodesWithTag("formats_screen").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Open-license test film").assertIsDisplayed()
         compose.onNodeWithText("Quality & format").performScrollTo().assertIsDisplayed()
@@ -38,13 +41,26 @@ class AppScreensTest {
         compose.onNodeWithText("Video + audio · no merging needed").assertIsDisplayed()
         compose.onNodeWithTag("download_button").assertIsEnabled()
     }
+    @Test fun searchScreenShowsRecentsAndResults() {
+        compose.onNodeWithTag("home_search").performClick()
+        compose.onNodeWithTag("search_input").performTextInput(" Kurzgesagt docs ")
+        compose.onNodeWithTag("search_submit").performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithTag("search_results").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Results for “Kurzgesagt docs”").assertIsDisplayed()
+        // Clearing the query reveals the remembered search as a recent entry.
+        compose.onNodeWithTag("search_clear").performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithTag("search_recents").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Kurzgesagt docs").assertIsDisplayed()
+        compose.onNodeWithTag("search_recent_remove").performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithTag("search_recents").fetchSemanticsNodes().isEmpty() }
+    }
     @Test fun downloadScreenHasAnHonestEmptyState() {
         compose.onNodeWithTag("nav_downloads").performClick()
         compose.onNodeWithText("Nothing in the queue").assertIsDisplayed()
         compose.onNodeWithText("Add a link").performClick()
-        compose.onNodeWithTag("home_url").assertIsDisplayed()
+        compose.onNodeWithTag("search_input").assertIsDisplayed()
     }
-    @Test fun historySurvivesActivityRecreationAndReportsMissingFiles() {
+    @Test fun completedVideosAppearInVideoLibraryAndReportMissingFiles() {
         val id = runBlocking {
             val spec = DownloadSpec("https://example.com/film", "Saved test film", null, "example.com", 12.0,
                 FormatSelection(MediaFormat("18", "mp4", height = 720, hasVideo = true, hasAudio = true)), false, null)
@@ -55,11 +71,11 @@ class AppScreensTest {
             repository.cleaned(id)
             id
         }
-        compose.onNodeWithTag("nav_history").performClick()
+        compose.onNodeWithTag("nav_videos").performClick()
         compose.waitUntil(5000) { compose.onAllNodesWithTag("download_$id").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Saved test film.mp4").assertIsDisplayed()
         compose.activityRule.scenario.recreate()
-        compose.onNodeWithTag("nav_history").performClick()
+        compose.onNodeWithTag("nav_videos").performClick()
         compose.onNodeWithText("Saved test film.mp4").assertIsDisplayed()
         compose.waitUntil(5000) { compose.onAllNodesWithText("File unavailable").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("File unavailable").assertIsDisplayed()

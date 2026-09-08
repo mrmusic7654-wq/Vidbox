@@ -219,7 +219,7 @@ fun VidboxApp(home: HomeViewModel, downloads: DownloadsViewModel, history: Histo
             // Full-screen overlays: the video search flow and the tabbed browser.
             if (searching && homeState.media == null) {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    SearchScreen(searchState, homeState.error, onBack = { searching = false },
+                    SearchScreen(searchState, homeState.error, homeState.analyzing, onBack = { searching = false },
                         onInput = search::input, onSubmit = search::submit, onUseRecent = search::useRecent,
                         onRemoveRecent = search::removeRecent, onClearRecents = search::clearRecents,
                         onDownload = { result -> home.paste(result.url); home.analyze() },

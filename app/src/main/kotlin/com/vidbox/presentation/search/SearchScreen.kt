@@ -43,7 +43,7 @@ import com.vidbox.presentation.components.VidboxIcons
  * search and opens that exact video in the analyzer.
  */
 @Composable
-fun SearchScreen(state: SearchState, analysisError: String?, onBack: () -> Unit, onInput: (String) -> Unit,
+fun SearchScreen(state: SearchState, analysisError: String?, analyzing: Boolean, onBack: () -> Unit, onInput: (String) -> Unit,
     onSubmit: () -> Unit, onUseRecent: (String) -> Unit, onRemoveRecent: (String) -> Unit, onClearRecents: () -> Unit,
     onDownload: (VideoSearchResult) -> Unit, onOpenInBrowser: (VideoSearchResult) -> Unit) {
     val focus = remember { FocusRequester() }
@@ -85,6 +85,13 @@ fun SearchScreen(state: SearchState, analysisError: String?, onBack: () -> Unit,
 
         // Inline feedback sits directly under the search bar so it stays on screen
         // even when the results list below fills the remaining height.
+        if (analyzing) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text("Fetching download options…", style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         (state.analysisError ?: analysisError)?.let {
             Box(Modifier.padding(16.dp)) { InfoBanner(it, error = true, modifier = Modifier.testTag("analysis_error")) }
         }

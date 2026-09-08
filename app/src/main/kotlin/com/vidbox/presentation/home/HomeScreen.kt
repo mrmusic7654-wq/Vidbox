@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
@@ -95,7 +94,6 @@ fun HomeScreen(state: HomeState, active: List<DownloadRecord>, recent: List<Down
                     Text("Search or type a URL", Modifier.weight(1f),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Icon(VidboxIcons.link, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

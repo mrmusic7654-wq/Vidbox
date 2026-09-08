@@ -10,7 +10,7 @@ An Android video and audio downloader built with Kotlin, Compose and Material 3.
 
 1. **Home** is a downloader-style launcher: an orange **Search video online** pill opens the YouTube search flow, a **Search or type a URL** bar opens the tabbed browser on the same screen, and site shortcut tiles (TikTok, Facebook, X, Vimeo, … plus your own) jump straight to a site.
 2. **Search video online** searches YouTube by name through the bundled yt-dlp engine. Every result shows thumbnail, channel, duration, and a one-tap download; pasting a link instead searches nothing — it analyzes that exact video.
-3. Paste/share a supported **HTTPS** link, or open any page in the browser and use ⋮ → **Download from this page**; direct links to media or files (`.mp4`, `.pdf`, `.zip`, …) ask once and go straight to the queue.
+3. Paste/share a supported **HTTPS** link, or open any page in the browser and tap the floating download button (drag it anywhere) or ⋮ → **Download from this page**; direct links to media or files (`.mp4`, `.pdf`, `.zip`, …) ask once and go straight to the queue.
 4. Results come from a direct-media HTTP probe or the bundled yt-dlp engine, not a fixed list of sample formats. Video is offered **only as MP4**, one option per quality the source actually reports — no invented or "unknown" qualities. Separate audio/video options are clearly marked.
 5. Tap **Download media**. Manage the actual queue in the Download tab or its foreground notifications.
 6. Completed media appears in the **Video** and **Audio** tabs (and the Download tab's completed list); generic browser files (PDF, archives, images, …) land in **Downloads/Vidbox**. Open, share, search, sort, inspect, or delete them there.

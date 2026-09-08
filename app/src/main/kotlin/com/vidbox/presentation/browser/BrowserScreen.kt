@@ -15,6 +15,7 @@ import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -22,6 +23,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -34,15 +36,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -113,6 +122,11 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
     }
 
     val activeTab = state.activeTab
+    // Floating quick-download button: draggable anywhere in the window, remembers its spot per screen visit.
+    var browserSize by remember { mutableStateOf(IntSize.Zero) }
+    var quickFiles by remember { mutableStateOf<List<PageFile>>(emptyList()) }
+    var quickOpen by remember { mutableStateOf(false) }
+    var quickScanning by remember { mutableStateOf(false) }
     BackHandler {
         val view = activeTab?.let { webViews[it.id] }
         when {
@@ -122,7 +136,8 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
         }
     }
 
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).testTag("browser_screen")) {
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).testTag("browser_screen")
+        .onSizeChanged { browserSize = it }) {
         Column(Modifier.fillMaxSize()) {
             BrowserTopBar(state, browser, onDownloadPage)
             if ((activeTab?.loading == true)) {
@@ -189,6 +204,30 @@ fun BrowserScreen(browser: BrowserViewModel, state: BrowserState, notificationsA
                 dismissButton = { TextButton(onClick = { browser.dismissJsDialog(null) }) { Text("Cancel") } })
         }
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding())
+        if (activeTab?.currentUrl != null && !state.switcherOpen) {
+            QuickDownloadButton(browserSize, enabled = !quickScanning, modifier = Modifier.align(Alignment.BottomEnd),
+                onScan = {
+                    val view = activeTab.let { webViews[it.id] }
+                    if (view == null) {
+                        quickFiles = emptyList(); quickOpen = true
+                    } else {
+                        quickScanning = true
+                        view.evaluateJavascript(SCAN_PAGE_JS) { payload ->
+                            quickScanning = false
+                            quickFiles = runCatching { parsePageFiles(payload ?: "") }.getOrDefault(emptyList())
+                            quickOpen = true
+                        }
+                    }
+                })
+        }
+        if (quickOpen) {
+            ModalBottomSheet(onDismissRequest = { quickOpen = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+                QuickDownloadSheet(files = quickFiles, hasPage = activeTab?.currentUrl != null,
+                    onFile = { file -> quickOpen = false; browser.downloadStart(file.url, null, null, 0) },
+                    onAnalyzePage = { quickOpen = false; onDownloadPage(activeTab?.currentUrl) })
+            }
+        }
     }
     HistorySheet(state, browser)
 }
@@ -502,3 +541,170 @@ internal fun downloadTypeLabel(pending: PendingDownload): String {
         else -> "File"
     }
 }
+
+/**
+ * The floating, draggable download button for the browser. Tap scans the visible page for
+ * direct video, audio, and file links and opens a picker; dragging repositions it anywhere
+ * along the page edges so it never covers content you are reading.
+ */
+@Composable
+private fun QuickDownloadButton(browserSize: IntSize, enabled: Boolean, modifier: Modifier = Modifier,
+    onScan: () -> Unit) {
+    val density = LocalDensity.current
+    val fabSize = 54.dp
+    val margin = with(density) { 16.dp.toPx() }
+    val fabPx = with(density) { fabSize.toPx() }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    var dragging by remember { mutableStateOf(false) }
+    val maxX = (browserSize.width - fabPx - margin).coerceAtLeast(0f)
+    val maxY = (browserSize.height - fabPx - with(density) { 110.dp.toPx() }).coerceAtLeast(0f)
+    Surface(
+        shape = CircleShape,
+        color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+        shadowElevation = if (dragging) 10.dp else 6.dp,
+        modifier = modifier
+            .offset { IntOffset(-offset.x.roundToInt(), -offset.y.roundToInt()) }
+            .size(fabSize)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { dragging = true },
+                    onDragEnd = { dragging = false },
+                    onDragCancel = { dragging = false },
+                ) { change, amount ->
+                    change.consume()
+                    offset = Offset((offset.x - amount.x).coerceIn(0f, maxX), (offset.y - amount.y).coerceIn(0f, maxY))
+                }
+            }
+            .clickable(enabled = enabled && !dragging) { onScan() },
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(fabSize)) {
+            if (enabled) {
+                Icon(VidboxIcons.download, "Find downloads on this page",
+                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(26.dp))
+            } else {
+                CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary)
+            }
+        }
+    }
+}
+
+/** One direct media/file link found on the current page. */
+internal data class PageFile(val url: String, val name: String)
+
+/**
+ * Rows in the style of the video-search results: icon, file name, site · type, and a
+ * download action per row. The last entry always offers the page analyzer for streams
+ * that do not expose a direct link (e.g. segmented video players).
+ */
+@Composable
+private fun QuickDownloadSheet(files: List<PageFile>, hasPage: Boolean, onFile: (PageFile) -> Unit,
+    onAnalyzePage: () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(bottom = 14.dp)) {
+        Text("Download from this page", style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp))
+        if (files.isEmpty()) {
+            Text(
+                if (hasPage) "No direct video, audio, or file links were found on this page. " +
+                    "Videos that stream in pieces cannot be saved directly — run the page through the analyzer below."
+                else "Open a page first, then look for downloads here.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp))
+        } else {
+            LazyColumn(Modifier.heightIn(max = 430.dp), contentPadding = PaddingValues(horizontal = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(files, key = { it.url }) { file ->
+                    Surface(onClick = { onFile(file) }, shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                        modifier = Modifier.fillMaxWidth().testTag("page_file_row")) {
+                        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            val ext = file.url.substringBefore('#').substringBefore('?').substringAfterLast('.', "").lowercase()
+                            Icon(when {
+                                ext in FileNames.audioExtensions -> VidboxIcons.audio
+                                ext in FileNames.extensions -> VidboxIcons.video
+                                else -> VidboxIcons.file
+                            }, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.primary)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(file.name, style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(listOfNotNull(BrowserLinks.displayHost(file.url), ext.takeIf { it.isNotEmpty() }?.uppercase())
+                                    .joinToString(" · "), style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            Icon(VidboxIcons.download, "Download ${file.name}",
+                                Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+        }
+        if (hasPage) {
+            HorizontalDivider(Modifier.padding(horizontal = 20.dp, vertical = 10.dp))
+            Surface(onClick = onAnalyzePage, shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp).testTag("page_analyze_row")) {
+                Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Icon(VidboxIcons.analyzing, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.primary)
+                    Column(Modifier.weight(1f)) {
+                        Text("Analyze this page for videos", style = MaterialTheme.typography.bodyLarge)
+                        Text("Runs the page link through the video engine — works for players without direct links",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Icon(VidboxIcons.download, null, Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Collects candidate downloads from the current page: media element sources first, then
+ * document anchors. The scanner script answers one `url\Tname` pair per line, tab-separated;
+ * Kotlin filters to real download targets (media/file extensions) and de-duplicates.
+ */
+internal fun parsePageFiles(payload: String): List<PageFile> {
+    val seen = mutableSetOf<String>()
+    val files = mutableListOf<PageFile>()
+    payload.lineSequence().forEach { line ->
+        if (line.isBlank()) return@forEach
+        val tab = line.indexOf('\t')
+        val url = (if (tab >= 0) line.substring(0, tab) else line).trim()
+        if (!url.startsWith("http://") && !url.startsWith("https://")) return@forEach
+        val clean = url.substringBefore('#').substringBefore('?')
+        val ext = clean.substringAfterLast('.', "").lowercase()
+        if (ext !in FileNames.extensions && ext !in FileNames.fileExtensions) return@forEach
+        if (!seen.add(clean)) return@forEach
+        var name = if (tab >= 0) line.substring(tab + 1).trim() else ""
+        if (name.isEmpty()) name = clean.substringAfterLast('/').ifEmpty { url }
+        files += PageFile(url, name.take(110))
+    }
+    return files.take(40)
+}
+
+private const val SCAN_PAGE_JS = """
+(function() {
+  var lines = [];
+  var seen = {};
+  function abs(u) { try { return new URL(u, location.href).href } catch (e) { return null } }
+  function clean(s) { return (s || '').replace(/[\t\r\n]+/g, ' ').trim().slice(0, 110); }
+  function push(u, label) {
+    var a = abs(u);
+    if (!a || !/^https?:/i.test(a) || seen[a]) return;
+    seen[a] = 1;
+    var name = clean(label);
+    if (!name) {
+      try { name = decodeURIComponent(a.split('#')[0].split('?')[0].split('/').pop() || '') } catch (e) { name = '' }
+    }
+    lines.push(a + '\t' + name);
+  }
+  var media = document.querySelectorAll('video[src],audio[src],source[src]');
+  for (var i = 0; i < media.length && i < 60; i++) push(media[i].getAttribute('src'), null);
+  var anchors = document.querySelectorAll('a[href]');
+  for (var j = 0; j < anchors.length && j < 400; j++) push(anchors[j].getAttribute('href'), anchors[j].textContent);
+  return lines.slice(0, 120).join('\n');
+})()
+""".trimIndent()

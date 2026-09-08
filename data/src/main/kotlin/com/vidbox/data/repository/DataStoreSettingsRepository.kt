@@ -119,7 +119,9 @@ internal class SettingsEncoding(private val cipher: SecretCipher? = null) {
         prefs[Keys.proxyEnabled] = proxy.enabled && valid
         val username = proxy.username?.take(256).orEmpty()
         val password = proxy.password?.take(256).orEmpty()
-        val encrypted = if (username.isEmpty() || cipher == null) null else runCatching { cipher.encrypt("$username\n$password") }.getOrNull()
+        val encoder = cipher
+        val encrypted = if (username.isEmpty() || encoder == null) null
+        else runCatching { encoder.encrypt("$username\n$password") }.getOrNull()
         if (encrypted == null) prefs.remove(Keys.proxySecret) else prefs[Keys.proxySecret] = encrypted
     }
 

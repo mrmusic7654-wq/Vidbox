@@ -41,8 +41,8 @@ class VideoSearchParser @Inject constructor(private val json: Json) {
             title = title,
             url = url,
             thumbnailUrl = entry.thumbnail(),
-            channel = (entry.string("channel") ?: entry.string("uploader")
-                ?: entry.string("uploader_id")?.removePrefix("@"))?.take(120),
+            channel = ((entry.string("channel") ?: entry.string("uploader")
+                ?: entry.string("uploader_id"))?.removePrefix("@"))?.take(120),
             durationSeconds = entry.number("duration")?.takeIf { it >= 0 },
             viewCount = entry.number("view_count")?.toLong()?.takeIf { it >= 0 },
         )
